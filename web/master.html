@@ -133,6 +133,27 @@
   .login input{width:100%;text-align:center;font-size:20px;letter-spacing:.5em;padding:14px;}
   .login .btn{width:100%;margin-top:16px;}
   .login .sub{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;line-height:1.8;}
+  .login .gbtn{background:linear-gradient(135deg,#4285f4,#34a853 55%,#fbbc05 80%,#ea4335);color:#fff;font-weight:800;letter-spacing:.04em;margin-top:6px;}
+  .tabs2{display:flex;gap:8px;margin-bottom:16px;}
+  .tabs2 button{flex:1;padding:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;}
+  .tabs2 button.on{background:linear-gradient(135deg,rgba(216,180,90,.18),rgba(216,180,90,.08));color:var(--gold2);border-color:var(--line2);}
+  .perms{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+  .perms label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--soft);border:1px solid var(--line);padding:6px 9px;border-radius:8px;background:rgba(255,255,255,.03);cursor:pointer;}
+  .perms label input{accent-color:var(--gold);}
+  .sfcard{background:rgba(255,255,255,.04);border:1px dashed var(--line2);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .sfcard input{display:block;width:100%;text-align:left;letter-spacing:.02em;margin:6px 0;padding:10px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.35);color:var(--ink);font-size:13px;}
+  .sfcard .btnrow{display:flex;gap:8px;margin-top:10px;}
+  .sfcard .btnrow button{flex:1;}
+  .staffrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.03);flex-wrap:wrap;}
+  .staffrow .id{font-weight:800;color:var(--gold2);}
+  .staffrow .meta{font-size:11px;color:var(--muted);flex:1;min-width:150px;}
+  .staffrow .chip{font-size:10px;border:1px solid var(--line);border-radius:20px;padding:2px 8px;color:var(--soft);}
+  .staffrow button{font-size:11px;}
+  .staffrow .off{opacity:.45;}
+  .qrwrap{margin:14px auto 6px;padding:10px;background:#fff;border-radius:14px;width:198px;height:198px;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
+  .qrwrap canvas{display:block;width:178px;height:178px;image-rendering:pixelated;}
+  .secretline{font-family:'Courier New',monospace;font-size:10px;color:var(--gold2);text-align:center;word-break:break-all;margin-top:8px;background:rgba(0,0,0,.4);border:1px dashed var(--line);border-radius:8px;padding:6px 8px;}
+  .login .link{background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;text-decoration:underline;margin-top:10px;}
 
   /* health */
   .hrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
@@ -152,9 +173,25 @@
   <!-- ===================== LOGIN ===================== -->
   <div class="login card rise" id="loginBox">
     <div class="pt">Panel Master</div>
-    <input type="password" id="pin" inputmode="numeric" placeholder="PIN OWNER" maxlength="64" autocomplete="off">
-    <button class="btn" id="btnLogin">Masuk</button>
-    <div class="sub">Hanya pemilik yang memiliki PIN.<br>Terdeteksi otomatis · sesi 12 jam.</div>
+    <div id="ownerFlow">
+      <div class="sub" id="loginStep">Masuk dengan akun pemilik atau staff.</div>
+      <input type="text" id="username" autocomplete="username" placeholder="Username / akun" maxlength="64" autocapitalize="off" spellcheck="false">
+      <input type="password" id="password" autocomplete="current-password" placeholder="Password / kata sandi" maxlength="128">
+      <button class="btn" id="btnStep1">Masuk</button>
+      <div id="twofaBox">
+        <div class="sub">Tahap verifikasi owner · Scan barcode di aplikasi Authenticator,<br>lalu masukkan PIN owner + kode 2FA.</div>
+        <div class="qrwrap"><canvas id="qrCanvas" width="0" height="0"></canvas></div>
+        <div class="secretline" id="qrSecret"></div>
+        <div class="sub" style="color:var(--gold2);background:rgba(216,180,90,.08);border:1px dashed rgba(216,180,90,.35);border-radius:10px;padding:10px;margin-top:14px;">
+          Scan gagal? Buka Google Authenticator → + → Enter setup key →
+          tempel nilai <b>Secret</b> di atas &nbsp;(Time-based) → Add.
+        </div>
+        <input type="password" id="pin" inputmode="numeric" placeholder="PIN OWNER" maxlength="64" autocomplete="off">
+        <input type="text" id="code" inputmode="numeric" placeholder="Kode 2FA (authenticator)" maxlength="6" autocomplete="one-time-code">
+        <button class="btn" id="btnLogin">Masuk</button>
+        <div class="sub">Kode 2FA berganti tiap 30 detik.<br>Sesi dikunci ke perangkat ini · 12 jam.</div>
+      </div>
+    </div>
   </div>
 
   <!-- ===================== PANEL ===================== -->
@@ -174,6 +211,7 @@
       <button class="active" data-v="ringkas">Ringkasan</button>
       <button data-v="claim">Semua Klaim</button>
       <button data-v="health">Kesehatan</button>
+      <button data-v="staff" id="navStaff" style="display:none">Staff</button>
     </nav>
 
     <!-- RINGKASAN -->
@@ -221,6 +259,28 @@
       </div>
     </section>
 
+    <!-- STAFF -->
+    <section id="view-staff" class="view">
+      <div class="card">
+        <div class="kicker"><span>Kelola Staff</span><div class="hr"></div></div>
+        <div class="toolbar">
+          <button class="sm" id="btnNewStaff">+ Tambah Staff</button>
+        </div>
+        <div id="staffForm" class="sfcard" style="display:none">
+          <input id="sfId" type="hidden">
+          <input id="sfUser" placeholder="Username (a-z, 0-9, . _ @ -) · min 3">
+          <input id="sfPass" placeholder="Password (min 8 karakter)">
+          <input id="sfFull" placeholder="Nama lengkap">
+          <div class="perms" id="sfPerms"></div>
+          <div class="btnrow">
+            <button class="btn" id="sfSave">Simpan</button>
+            <button class="sm" id="sfCancel">Batal</button>
+          </div>
+        </div>
+        <div id="staffList"></div>
+      </div>
+    </section>
+
     <div class="foot">
       <span>PANEL MASTER · <b>terpisah dari situs publik</b></span>
       <span id="footTs"></span>
@@ -229,6 +289,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<script src="/qrcode.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -279,27 +340,180 @@
     Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('active', v.id === 'view-' + name); });
     if (name === 'claim') renderRows();
     if (name === 'health') loadHealth();
+    if (name === 'staff') loadStaff();
   }
 
-  /* ---------- login ---------- */
-  $('btnLogin').addEventListener('click', function () {
-    var pin = $('pin').value.trim(); if (!pin) { toast('Masukkan PIN owner.', 'bad'); return; }
-    var b = $('btnLogin'); b.disabled = true;
-    api('POST', '/api/auth', { pin: pin }).then(function () {
-      $('pin').value = '';
-      showPanel();
-    }).catch(function () {
-      toast('PIN salah atau sesi tidak valid.', 'bad');
-      b.disabled = false;
+  /* ---------- login (2 tahap: user+pass → QR+PIN+2FA) + staff ---------- */
+  var stageTok = '', acct = { kind: 'owner', perms: [] };
+  var PERM_LABEL = { ringkas: 'Lihat ringkasan', datalaim: 'Lihat semua klaim', approve: 'Approve / Reject', hapus: 'Hapus klaim', pantau: 'Pantau kesehatan', staff: 'Kelola staff' };
+  function hasPerm(p) { return acct.kind === 'owner' || (acct.perms || []).indexOf(p) >= 0; }
+  function drawQr(otpauth, secret) {
+    var c = $('qrCanvas'), Q = (typeof window.qrcode === 'function') ? window.qrcode : (typeof QRCode === 'function' ? QRCode : null);
+    if (!Q || !otpauth) {
+      c.parentNode.style.display = 'none';
+      $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '2FA belum diatur di server. Silakan isi OWNER_TOTP_SECRET.');
+      return;
+    }
+    var q = Q(0, 'M'); q.addData(otpauth); q.make();
+    var n = q.getModuleCount(), cell = 12, quiet = 4, dpr = Math.max(1, window.devicePixelRatio || 1);
+    var size = (n + quiet * 2) * cell;
+    c.width = size * dpr; c.height = size * dpr;
+    c.style.width = size + 'px'; c.style.height = size + 'px';
+    var ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000000';
+    var off = quiet * cell;
+    for (var r = 0; r < n; r++) for (var cc = 0; cc < n; cc++) if (q.isDark(r, cc)) ctx.fillRect(cc * cell + off, r * cell + off, cell, cell);
+    $('qrSecret').textContent = 'Secret: ' + (secret || '(kosong)');
+  }
+  function enterTwoFa() {
+    $('loginStep').textContent = 'Tahap verifikasi owner · PIN owner + kode 2FA';
+    $('btnStep1').style.display = 'none';
+    $('twofaBox').style.display = 'block';
+    api('POST', '/api/auth/setup2fa', { stage: stageTok }).then(function (d) {
+      drawQr(d.otpauth, d.secret);
+    }).catch(function (e) {
+      if (e.code === 'NEED_STEP1') { toast('Masukkan username & password dulu.', 'bad'); backToStep1(); return; }
+      toast('Tidak bisa menampilkan barcode.', 'bad');
+    });
+  }
+  function backToStep1() {
+    stageTok = ''; $('loginStep').textContent = 'Masuk dengan akun pemilik atau staff.';
+    $('btnStep1').style.display = ''; $('twofaBox').style.display = 'none';
+  }
+  $('btnStep1').addEventListener('click', function () {
+    var u = $('username').value.trim(), p = $('password').value;
+    if (!u || !p) { toast('Isi username & password.', 'bad'); return; }
+    var b = $('btnStep1'); b.disabled = true; b.textContent = 'Memeriksa…';
+    api('POST', '/api/auth/step1', { username: u, password: p }).then(function (d) {
+      $('password').value = '';
+      if (d.kind === 'staff') {
+        b.disabled = false; b.textContent = 'Masuk';
+        location.hash = '';
+        acct = { kind: 'staff', perms: d.staff.perms, staff: d.staff };
+        showPanel();
+        return;
+      }
+      stageTok = d.stage; b.disabled = false; b.textContent = 'Masuk';
+      enterTwoFa();
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = 'Masuk';
+      if (e.code === 'ENV') toast(e.message, 'bad');
+      else toast('Akun tidak dikenal / tidak aktif. Coba lagi.', 'bad');
     });
   });
-  $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnLogin').click(); });
-  $('btnLogout').addEventListener('click', function () { document.cookie = 'owner_tok=; Path=/; Max-Age=0'; location.reload(); });
+  $('username').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('password').focus(); });
+  $('password').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnStep1').click(); });
+  function doLogin() {
+    var pin = $('pin').value.trim(); if (!pin) { toast('Masukkan PIN owner.', 'bad'); return; }
+    var code = $('code').value.trim(); if (!code) { toast('Masukkan kode 2FA dari authenticator.', 'bad'); return; }
+    var b = $('btnLogin'); b.disabled = true;
+    api('POST', '/api/auth', { pin: pin, code: code, stage: stageTok }).then(function () {
+      $('pin').value = ''; $('code').value = ''; location.hash = '';
+      acct = { kind: 'owner', perms: [] };
+      showPanel();
+    }).catch(function (e) {
+      if (e.code === 'NEED_STEP1') toast('Masukkan username & password pemilik dulu.', 'bad');
+      else toast('PIN / 2FA salah, atau sesi tidak valid.', 'bad');
+      b.disabled = false;
+    });
+  }
+  $('btnLogin').addEventListener('click', doLogin);
+  $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('code').focus(); });
+  $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+
+  $('twofaBox').style.display = 'none';   // tampil setelah tahap 1 (username+password) lolos
+
+  $('btnLogout').addEventListener('click', function () {
+    api('POST', '/api/staff/logout').catch(function () {});
+    document.cookie = 'owner_tok=; Path=/; Max-Age=0';
+    document.cookie = 'staff_tok=; Path=/; Max-Age=0';
+    location.reload();
+  });
 
   function showPanel() {
     $('loginBox').style.display = 'none';
     $('panel').style.display = 'block';
+    applyPerms();
     boot();
+  }
+  function applyPerms() {
+    var nav = { ringkas: hasPerm('ringkas'), claim: hasPerm('datalaim'), health: hasPerm('pantau'), staff: hasPerm('staff') };
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
+      var v = b.getAttribute('data-v');
+      b.style.display = nav[v] ? '' : 'none';
+    });
+    $('navStaff').style.display = hasPerm('staff') ? '' : 'none';
+    if (!nav[currentTab]) {
+      var first = ['ringkas', 'claim', 'health', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
+      setTab(first);
+    }
+    var whois = acct.kind === 'owner' ? 'Owner' : ('Staff · ' + ((acct.staff && (acct.staff.fullname || acct.staff.username)) || 'ok'));
+    $('hello').textContent = 'Terhubung sebagai ' + whois + '.';
+  }
+
+  /* ---------- kelola staff ---------- */
+  function staffFormOpen(row) {
+    var f = $('staffForm'); f.style.display = 'block';
+    $('sfId').value = (row && row.id) || '';
+    $('sfUser').value = (row && row.username) || '';
+    $('sfPass').value = '';
+    $('sfPass').placeholder = row ? 'Password baru (kosongkan utk tetap)' : 'Password (min 8 karakter)';
+    $('sfFull').value = (row && row.fullname) || '';
+    var cur = (row && row.perms) || [];
+    $('sfPerms').innerHTML = Object.keys(PERM_LABEL).map(function (k) {
+      return '<label><input type="checkbox" data-p="' + k + '"' + (cur.indexOf(k) >= 0 ? ' checked' : '') + '> ' + PERM_LABEL[k] + '</label>';
+    }).join('');
+    $('sfUser').disabled = !!row;
+  }
+  $('btnNewStaff').addEventListener('click', function () { staffFormOpen(null); });
+  $('sfCancel').addEventListener('click', function () { $('staffForm').style.display = 'none'; });
+  $('sfSave').addEventListener('click', function () {
+    var id = $('sfId').value, username = $('sfUser').value.trim(), password = $('sfPass').value, fullname = $('sfFull').value.trim();
+    var perms = [];
+    Array.prototype.forEach.call($('sfPerms').querySelectorAll('input:checked'), function (x) { perms.push(x.getAttribute('data-p')); });
+    if (!id && !username) { toast('Isi username.', 'bad'); return; }
+    if (!id && password.length < 8) { toast('Password minimal 8 karakter.', 'bad'); return; }
+    var b = $('sfSave'); b.disabled = true;
+    var req = (id ? { id: id, fullname: fullname, perms: perms } : { username: username, password: password, fullname: fullname, perms: perms });
+    if (!id && $('sfPass').value) { /* password sudah di payload create */ }
+    if (id && password) req.password = password;
+    api('POST', id ? '/api/staff/update' : '/api/staff/create', req).then(function () {
+      b.disabled = false; $('staffForm').style.display = 'none';
+      toast(id ? 'Staff diperbarui.' : 'Staff ditambahkan.', 'ok');
+      loadStaff();
+    }).catch(function (e) { b.disabled = false; toast(e.message || 'Gagal menyimpan.', 'bad'); });
+  });
+  function renderStaff(rows) {
+    var box = $('staffList');
+    if (!rows.length) { box.innerHTML = '<div class="empty">Belum ada staff.</div>'; return; }
+    box.innerHTML = rows.map(function (r) {
+      return '<div class="staffrow' + (r.active ? '' : ' off') + '">' +
+        '<span class="id">' + esc(r.username) + '</span>' +
+        '<span class="meta">' + esc(r.fullname || '-') + ' · ' + esc((r.role || '').toUpperCase()) + (r.active ? '' : ' · NONAKTIF') + '</span>' +
+        '<span class="chips">' + (r.perms || []).map(function (p) { return '<span class="chip">' + esc(PERM_LABEL[p] || p) + '</span>'; }).join('') + '</span>' +
+        '<span class="meta">dibuat ' + esc(when(r.created_at)) + '</span>' +
+        '<button class="sm" data-sf="edit" data-id="' + esc(r.id) + '">Ubah Izin</button>' +
+        '<button class="sm danger" data-sf="del" data-id="' + esc(r.id) + '">' + (r.active ? 'Nonaktifkan' : 'Aktifkan') + '</button>' +
+        '</div>';
+    }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('button[data-sf]'), function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.getAttribute('data-sf') === 'edit') {
+          var row = rows.filter(function (r) { return r.id === btn.getAttribute('data-id'); })[0];
+          staffFormOpen(row);
+        } else {
+          var row2 = rows.filter(function (r) { return r.id === btn.getAttribute('data-id'); })[0];
+          if (!row2) return;
+          api('POST', '/api/staff/update', { id: row2.id, active: !row2.active }).then(function () { loadStaff(); }).catch(function (e) { toast(e.message || 'Gagal.', 'bad'); });
+        }
+      });
+    });
+  }
+  function loadStaff() {
+    api('GET', '/api/staff/list').then(function (d) { renderStaff(d.rows || []); })
+      .catch(function (e) { toast(e.message || 'Gagal memuat staff.', 'bad'); $('staffList').innerHTML = '<div class="empty">' + esc(e.message || 'Gagal memuat.') + '</div>'; });
   }
 
   /* ---------- ringkasan ---------- */
@@ -367,13 +581,19 @@
         (c.label ? '<span>Label <b>' + esc(c.label) + '</b></span>' : '') +
         '</div>' +
         '<div class="rd">' + esc(c.detail || '') + '</div>' +
-        (needFix ?
+        (needFix && hasPerm('approve') ?
           '<div class="actions">' +
           '<input class="fxu" value="' + esc(c.user_id) + '" maxlength="64">' +
           '<input class="fxt" value="' + esc(c.kode_tiket) + '" inputmode="numeric" maxlength="40">' +
           '<button class="sm fxbtn" data-i="' + esc(c.id) + '">Cek Ulang</button>' +
           '</div>' : '') +
-        '<div class="actions"><button class="sm danger delbtn" data-i="' + esc(c.id) + '">Hapus</button></div>';
+        (hasPerm('approve') && (c.status === 'PENDING' || c.status === 'QUEUED' || c.status === 'VERIFYING' || c.status === 'SESUAI' || c.status === 'INPUTTING') ?
+          '<div class="actions">' +
+          '<button class="sm appbtn" data-i="' + esc(c.id) + '">Approve</button>' +
+          '<button class="sm rejbtn" data-i="' + esc(c.id) + '">Reject</button>' +
+          '</div>' : '') +
+        (hasPerm('hapus') ?
+          '<div class="actions"><button class="sm danger delbtn" data-i="' + esc(c.id) + '">Hapus</button></div>' : '');
       out.push(div);
     }
     $('empty').style.display = out.length ? 'none' : 'block';
@@ -403,6 +623,7 @@
   $('rows').addEventListener('click', function (e) {
     var t = e.target;
     var fx = t.closest && t.closest('.fxbtn'); var del = t.closest && t.closest('.delbtn');
+    var appb = t.closest && t.closest('.appbtn'); var rejb = t.closest && t.closest('.rejbtn');
     if (fx) {
       var row = fx.closest('.row'); var id = fx.getAttribute('data-i');
       var uid = row.querySelector('.fxu').value.trim(); var tx = row.querySelector('.fxt').value.trim();
@@ -418,6 +639,15 @@
       api('POST', '/api/admin', { action: 'remove', id: id2 })
         .then(function () { toast('Klaim dihapus.', 'ok'); loadClaims(); loadSummary(); })
         .catch(function (er) { if (unAuth(er)) return bootFail(); toast((er && er.message) || 'Gagal hapus.', 'bad'); });
+    }
+    if (appb || rejb) {
+      var aid = (appb || rejb).getAttribute('data-i');
+      var doApprove = !!appb;
+      if (!confirm(doApprove ? 'Approve klaim ini?' : 'Reject klaim ini?')) return;
+      var btn = appb || rejb; btn.disabled = true;
+      api('POST', '/api/admin', { action: doApprove ? 'approve' : 'reject', id: aid })
+        .then(function () { toast(doApprove ? 'Klaim di-approve.' : 'Klaim di-reject.', 'ok'); loadClaims(); loadSummary(); })
+        .catch(function (er) { if (unAuth(er)) return bootFail(); toast((er && er.message) || 'Gagal perbarui.', 'bad'); btn.disabled = false; });
     }
   });
 
@@ -447,14 +677,17 @@
   function bootFail() { toast('Sesi berakhir. Login ulang.', 'bad'); setTimeout(function () { location.reload(); }, 900); }
   function boot() {
     $('hello').textContent = 'Terhubung ke penyimpanan…';
-    api('GET', '/api/admin?q=sites').then(function (d) {
-      sites = {}; var sel = $('isite'); var opts = '<option value="">Semua situs</option>';
-      (d.sites || []).forEach(function (r) { sites[r.site_id] = r.label; opts += '<option value="' + esc(r.site_id) + '">' + esc(r.label) + '</option>'; });
-      sel.innerHTML = opts;
-    }).catch(function (e) { if (unAuth(e)) return bootFail(); });
-    loadClaims();
-    loadSummary();
-    loadHealth();
+    if (hasPerm('ringkas') || hasPerm('datalaim')) {
+      api('GET', '/api/admin?q=sites').then(function (d) {
+        sites = {}; var sel = $('isite'); var opts = '<option value="">Semua situs</option>';
+        (d.sites || []).forEach(function (r) { sites[r.site_id] = r.label; opts += '<option value="' + esc(r.site_id) + '">' + esc(r.label) + '</option>'; });
+        sel.innerHTML = opts;
+      }).catch(function (e) { if (unAuth(e)) return bootFail(); });
+    }
+    if (hasPerm('datalaim')) loadClaims();
+    if (hasPerm('ringkas')) loadSummary();
+    if (hasPerm('pantau')) loadHealth();
+    if (hasPerm('staff')) loadStaff();
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
@@ -462,10 +695,12 @@
   });
   setTab('ringkas');
 
-  /* cek sesi jalan atau belum (jika cookie masih ada) */
-  api('GET', '/api/admin?q=sites').then(function () { showPanel(); }).catch(function (e) {
-    if (unAuth(e)) return;         // 401/403 → tampilkan login
-    showPanel();                    // server error → tetap coba login
+  /* cek sesi jalan atau belum (owner / staff) */
+  api('GET', '/api/session').then(function (d) {
+    acct = { kind: d.kind, perms: d.perms || [], staff: d.staff };
+    showPanel();
+  }).catch(function () {
+    // tanpa sesi → tampilkan login
   });
 })();
 </script>

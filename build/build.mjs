@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, rmSync, readdirSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, existsSync, rmSync, readdirSync, statSync } from 'fs';
+import { join, dirname, resolve, basename } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import obfuscator from 'javascript-obfuscator';
@@ -68,6 +68,27 @@ function copyDir(src, dst) {
   }
 }
 
+/* Rebuild folder deploy tanpa menghapus link Vercel (.vercel) & .env.local,
+   supaya `vercel --prod` berikutnya tetap menuju project yg sama. */
+function copyEntry(src, dst) {
+  if (!existsSync(src)) return;
+  if (!statSync(src).isDirectory()) { mkdirSync(dirname(dst), { recursive: true }); copyFileSync(src, dst); return; }
+  copyDir(src, dst);
+}
+function recreateDir(dir) {
+  const tmp = join(root, '.keep-' + (dirname(dir) === root ? basename(dir) : 'out'));
+  const keep = ['.vercel', '.env.local'];
+  if (existsSync(tmp)) rmSync(tmp, { recursive: true, force: true });
+  if (existsSync(dir)) {
+    mkdirSync(tmp, { recursive: true });
+    for (const k of keep) if (existsSync(join(dir, k))) copyEntry(join(dir, k), join(tmp, k));
+    rmSync(dir, { recursive: true, force: true });
+  }
+  mkdirSync(dir, { recursive: true });
+  for (const k of keep) if (existsSync(join(tmp, k))) copyEntry(join(tmp, k), join(dir, k));
+  if (existsSync(tmp)) rmSync(tmp, { recursive: true, force: true });
+}
+
 function buildWebHtml(name, outName, outDir) {
   const file = join(webSrc, name);
   const html = readFileSync(file, 'utf8');
@@ -80,8 +101,7 @@ function buildWebHtml(name, outName, outDir) {
 
 /* --- 1a. SITUS PUBLIK --- */
 const outWeb = join(root, 'deploy');
-if (existsSync(outWeb)) rmSync(outWeb, { recursive: true, force: true });
-mkdirSync(outWeb, { recursive: true });
+recreateDir(outWeb);
 
 buildWebHtml('index.html', 'index.html', outWeb); num.PUBLIC++;
 
@@ -91,30 +111,35 @@ if (existsSync(join(webSrc, 'sb.js'))) {
 }
 copyFileSync(join(root, 'messageImage_1787629523742.jpg'), join(outWeb, 'messageImage_1787629523742.jpg'));
 copyFileSync(join(root, 'vercel.json'), join(outWeb, 'vercel.json'));
+copyFileSync(join(webSrc, 'asset', 'qrcode.js'), join(outWeb, 'qrcode.js'));
 copyDir(join(webSrc, 'supabase'), join(outWeb, 'supabase'));
 copyDir(join(root, 'api', 'public'), join(outWeb, 'api'));
 console.log('web  asset + supabase sql + api/ + vercel.json copied');
 
 /* --- 1b. SITUS MASTER (terpisah) --- */
 const outMaster = join(root, 'deploy-master');
-if (existsSync(outMaster)) rmSync(outMaster, { recursive: true, force: true });
-mkdirSync(outMaster, { recursive: true });
+recreateDir(outMaster);
 
 buildWebHtml('master.html', 'index.html', outMaster); num.MASTER++;
 
 copyFileSync(join(root, 'messageImage_1787629523742.jpg'), join(outMaster, 'messageImage_1787629523742.jpg'));
 copyFileSync(join(root, 'vercel.json'), join(outMaster, 'vercel.json'));
+copyFileSync(join(webSrc, 'asset', 'qrcode.js'), join(outMaster, 'qrcode.js'));
 copyDir(join(webSrc, 'supabase'), join(outMaster, 'supabase'));
 copyDir(join(root, 'api', 'master'), join(outMaster, 'api'));
 console.log('master  asset + api/ + vercel.json copied');
 
 /* node --check semua file api yang disalin (harus tetap valid JS server) */
+function checkApiDir(dir) {
+  for (const f of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, f.name);
+    if (f.isDirectory()) checkApiDir(p);
+    else if (f.name.endsWith('.js')) check('api/' + f.name, p);
+  }
+}
 for (const dir of [join(outWeb, 'api'), join(outMaster, 'api')]) {
   if (!existsSync(dir)) continue;
-  for (const f of readdirSync(dir).filter(x => x.endsWith('.js'))) {
-    const p = join(dir, f);
-    if (!check('api/' + f, p)) num.PUBLIC = num.PUBLIC; // tetap dilaporkan saja
-  }
+  checkApiDir(dir);
 }
 
 /* ============================================================

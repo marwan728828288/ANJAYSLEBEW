@@ -3,3 +3,4 @@ dist-extension/
 deploy/
 .env*
 deploy-master/
+.vercel

@@ -1,11 +1,10 @@
 'use strict';
-/* /api/admin  — panel master (wajib token owner)
-   GET  ?q=summary   → ringkasan per situs (hari ini + total)
-   GET  ?q=claims    → daftar klaim (opsi site/status/q/limit)
-   GET  ?q=sites     → daftar situs + aktif
-   POST {action:'remove', id}       → hapus satu klaim
-   POST {action:'patch', id, obj}   → perbaiki klaim (mis. Cek Ulang)
-   POST {action:'clearDone'}        → hapus status final
+/* /api/admin  — panel master (owner atau staff dengan izin sesuai fitur)
+   GET  ?q=summary   → ringkasan       (izin: ringkas)
+   GET  ?q=sites     → daftar situs    (izin: ringkas)
+   GET  ?q=claims    → daftar klaim    (izin: datalaim)
+   POST remove/clearDone                (izin: hapus)
+   POST patch / verdict                 (izin: approve)
 */
 const L = require('./_lib');
 
@@ -70,13 +69,21 @@ function summarize(claims, sites) {
 }
 
 module.exports = async function (req, res) {
-  const sess = L.requireOwner(req, res);
-  if (!sess) return;
+  const ip = L.clientIp(req);
+  const ua = String(req.headers['user-agent'] || '');
 
   try {
     if (req.method === 'GET') {
       const url = new URL(req.url, 'http://x');
       const q = url.searchParams.get('q') || 'claims';
+
+      if (q === 'summary' || q === 'sites') {
+        const acct = await L.requireAccount(req, res, 'ringkas');
+        if (!acct) return;
+      } else {
+        const acct = await L.requireAccount(req, res, 'datalaim');
+        if (!acct) return;
+      }
 
       if (q === 'summary') {
         const since = L.iso(new Date(L.wibDayStartMs() - 7 * 86400000));  // seminggu cukup utk ringkasan
@@ -100,6 +107,28 @@ module.exports = async function (req, res) {
       const body = await L.readBody(req, 32 * 1024).catch(function () { return null; });
       if (!body || typeof body !== 'object') return L.bad(res, 'BAD_BODY', 'Data tidak terbaca.');
 
+      if (body.action === 'remove' || body.action === 'clearDone') {
+        const acct = await L.requireAccount(req, res, 'hapus');
+        if (!acct) return;
+      } else if (body.action === 'patch' || body.action === 'verdict' || body.action === 'approve' || body.action === 'reject') {
+        const acct = await L.requireAccount(req, res, 'approve');
+        if (!acct) return;
+      }
+
+      if (body.action === 'approve' && body.id) {
+        const id = String(body.id).replace(/[^0-9a-f-]/gi, '');
+        if (id.length !== 36) return L.bad(res, 'BAD_ID', 'ID tidak valid.');
+        await L.sbPatch(id, { status: 'APPROVED', label: 'APPROVE', verdict: 'APPROVED', verdict_at: L.iso(Date.now()) });
+        return L.ok(res, { ok: true });
+      }
+
+      if (body.action === 'reject' && body.id) {
+        const id = String(body.id).replace(/[^0-9a-f-]/gi, '');
+        if (id.length !== 36) return L.bad(res, 'BAD_ID', 'ID tidak valid.');
+        await L.sbPatch(id, { status: 'REJECTED', label: 'REJECT', verdict: 'REJECTED', verdict_at: L.iso(Date.now()) });
+        return L.ok(res, { ok: true });
+      }
+
       if (body.action === 'remove' && body.id) {
         const id = String(body.id).replace(/[^0-9a-f-]/gi, '');
         if (id.length !== 36) return L.bad(res, 'BAD_ID', 'ID tidak valid.');
@@ -114,6 +143,15 @@ module.exports = async function (req, res) {
         allowed.forEach(function (k) { if (body.obj[k] !== undefined) obj[k] = body.obj[k]; });
         if (!Object.keys(obj).length) return L.bad(res, 'BAD_PATCH', 'Tidak ada kolom yang boleh diubah.');
         await L.sbPatch(id, obj);
+        return L.ok(res, { ok: true });
+      }
+
+      if (body.action === 'verdict' && body.id) {
+        const id = String(body.id).replace(/[^0-9a-f-]/gi, '');
+        const v = String(body.verdict || '').toUpperCase();
+        if (id.length !== 36) return L.bad(res, 'BAD_ID', 'ID tidak valid.');
+        if (v !== 'APPROVED' && v !== 'REJECTED') return L.bad(res, 'BAD_VERDICT', 'Verdict harus APPROVED atau REJECTED.');
+        await L.sbPatch(id, { verdict: v, verdict_at: L.iso(Date.now()) });
         return L.ok(res, { ok: true });
       }
 
