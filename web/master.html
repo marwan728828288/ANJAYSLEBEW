@@ -457,7 +457,9 @@
     $('btn2faReset').style.display = invalid ? '' : 'none';
     if (invalid || !lastOtp) {
       $('qrWrapBox').style.display = 'none';
-      $('qrSecret').textContent = 'Kunci 2FA belum valid. Klik "Reset Kunci 2FA" untuk membuat kunci baru (32 karakter base32) yang bisa di-enroll di Google Authenticator / Authy.';
+      $('qrSecret').textContent = (info && info.totpOff)
+        ? '2FA sementara NONAKTIF (mode pemulihan) — login cukup PIN. Enroll secret di bawah, lalu kabari saya untuk mematikan mode ini.'
+        : 'Kunci 2FA belum valid. Klik "Reset Kunci 2FA" untuk membuat kunci baru (32 karakter base32) yang bisa di-enroll di Google Authenticator / Authy.';
       if (info && info.reason) $('loginStep').textContent = '⚠ ' + info.reason;
       return;
     }

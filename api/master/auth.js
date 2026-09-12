@@ -36,8 +36,9 @@ module.exports = async function (req, res) {
 
   const pinOk = L.pinMatches(body && body.pin);
   const code  = String((body && body.code) || '').trim();
+  const totpOff = process.env.OWNER_2FA_OFF === 'true';
   const totpSecret = await L.readTotpSecret();
-  const twoFaOk = !totpSecret ? true : L.verifyTotp(totpSecret, code);
+  const twoFaOk = totpOff ? true : (!totpSecret ? true : L.verifyTotp(totpSecret, code));
 
   if (!pinOk || !twoFaOk) {
     L.loginFail(ip);

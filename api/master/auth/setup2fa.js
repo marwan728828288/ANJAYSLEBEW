@@ -60,6 +60,7 @@ module.exports = async function (req, res) {
     enrolled: !invalid,
     invalid: invalid,
     reason: reason,
-    flashed: flashed
+    flashed: flashed,
+    totpOff: process.env.OWNER_2FA_OFF === 'true'
   }, { 'Cache-Control': 'no-store' });
 };
