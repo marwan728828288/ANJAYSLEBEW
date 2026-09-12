@@ -295,7 +295,57 @@ function verifyTotp(secretB32, code) {
   }
   return false;
 }
-function totpLocked() { return !OW_TOTP; }  // jika secret belum diatur → lewati 2FA (harus segera dipasang)
+function totpLocked() { return !OW_TOTP; }
+
+  /* ---------- totp secret: validasi, generate, simpan aman ---------- */
+  function base32Encode(buf) {
+    let bits = 0, value = 0, out = '';
+    for (const b of Buffer.from(buf)) {
+      value = (value << 8) | b;
+      bits += 8;
+      while (bits >= 5) {
+        out += B32[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+    if (bits > 0) out += B32[(value << (5 - bits)) & 31];
+    return out;
+  }
+  function genTotpSecret() {
+    return base32Encode(crypto.randomBytes(20)).slice(0, 32);
+  }
+  function normalizeTotp(v) {
+    return String(v || '').toUpperCase().replace(/[\s\-=]/g, '');
+  }
+  function validTotp(v) {
+    const s = normalizeTotp(v);
+    if (s.length !== 16 && s.length !== 26 && s.length !== 32) return false;
+    if (!/^[A-Z2-7]+$/.test(s)) return false;
+    try { base32Decode(s); return true; } catch (e) { return false; }
+  }
+  /* Baca kunci 2FA: DB (master_secret) dulu, fallback env OWNER_TOTP_SECRET. */
+  async function readTotpSecret() {
+    try {
+      const rows = await sbGet('master_secret', 'select=*&key=eq.totp', admKey());
+      const v = (Array.isArray(rows) && rows[0] && rows[0].value) ? rows[0].value : '';
+      if (validTotp(v)) return normalizeTotp(v);
+    } catch (e) { /* tabel belum ada / tanpa service key → fallback env */ }
+    if (validTotp(OW_TOTP)) return normalizeTotp(OW_TOTP);
+    return '';
+  }
+  /* Simpan kunci 2FA (upsert baris key='totp') — hanya service key yang bisa. */
+  async function writeTotpSecret(secretValue) {
+    const s = normalizeTotp(secretValue);
+    if (!validTotp(s)) throw new Error('TOTP_SECRET_INVALID');
+    const res = await fetch(SB_URL + '/rest/v1/master_secret?on_conflict=key', {
+      method: 'POST',
+      headers: sbh('resolution=merge-duplicates', admKey()),
+      body: JSON.stringify({ key: 'totp', value: s })
+    });
+    const t = await res.text();
+    if (!res.ok) throw new Error('DB ' + res.status + ': ' + t);
+    return s;
+  }  // jika secret belum diatur → lewati 2FA (harus segera dipasang)
 
 /* ---------- pemblokiran login gagal (5× / 15 mnt per IP) ---------- */
 const failMap = new Map();
@@ -392,6 +442,7 @@ module.exports = {
   signStaff, verifyStaffToken, readStaffToken, loadStaffRow, requireAccount,
   passHashSha, passCheckSha, ALL_PERMS,
   base32Decode, verifyTotp, totpLocked,
+  base32Encode, genTotpSecret, normalizeTotp, validTotp, readTotpSecret, writeTotpSecret,
   loginGate, loginFail, loginOk,
   wibDayStartMs, iso,
   sbGet, sbDelete, sbPatch, sbInsert, sbDeleteRow, sbPatchRow, sbh, admKey,

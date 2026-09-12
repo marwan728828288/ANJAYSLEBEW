@@ -149,6 +149,7 @@
   .staffrow button{font-size:11px;}
   .staffrow .off{opacity:.45;}
   .qrwrap{margin:14px auto 6px;padding:14px;background:#fff;border-radius:14px;width:max-content;max-width:100%;box-sizing:border-box;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
+  #qrWrapBox canvas,#qrWrapBox img,.qbox canvas,.qbox img{max-width:100%;height:auto;}
   .qrwrap canvas{display:block;}
   #qrOverlay{display:none;position:fixed;inset:0;z-index:70;background:rgba(6,5,3,.96);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
   #qrOverlay .qbox{background:#fff;padding:14px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7);}
@@ -192,6 +193,7 @@
         <div class="sub">Tahap verifikasi owner Â· Scan barcode di aplikasi Authenticator,<br>lalu masukkan PIN owner + kode 2FA.</div>
         <div class="qrwrap" id="qrWrapBox"><img id="qrImg" alt="QR 2FA" style="display:none"><canvas id="qrCanvas" width="0" height="0" style="display:none"></canvas></div>
         <button class="btn" id="btnZoom" style="background:linear-gradient(135deg,#a8862c,#6c531a);color:#ffe9a8;font-weight:800;margin-top:12px;">Perbesar QR untuk discan</button>
+<button class="btn" id="btn2faReset" style="background:linear-gradient(135deg,#8a4b1f,#5c2c14);color:#ffd9a8;font-weight:800;margin-top:12px;display:none;">🔑 Reset Kunci 2FA</button>
         <div class="secretline" id="qrSecret"></div>
         <div class="sub" style="color:var(--gold2);background:rgba(216,180,90,.08);border:1px dashed rgba(216,180,90,.35);border-radius:10px;padding:10px;margin-top:14px;">
           Scan gagal? Buka Google Authenticator â†’ + â†’ Enter setup key â†’
@@ -445,21 +447,32 @@
     return true;
   }
   function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=20&ecc=H&color=0-0-0&bgcolor=255-255-255&data=' + encodeURIComponent(data); }
-  function drawQr(otpauth, secret) {
+  function qrFitPx() {
+    var w = Math.min(document.documentElement.clientWidth || 360, window.innerWidth || 360);
+    return Math.max(180, Math.min(320, Math.floor(w - 48)));
+  }
+  function drawQr(otpauth, secret, info) {
     lastOtp = otpauth || '';
-    $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '(kosong)');
-    if (!lastOtp) {
+    var invalid = !!(info && info.invalid);
+    $('btn2faReset').style.display = invalid ? '' : 'none';
+    if (invalid || !lastOtp) {
       $('qrWrapBox').style.display = 'none';
-      if (!secret) $('qrSecret').textContent = '2FA belum diatur di server. Silakan isi OWNER_TOTP_SECRET.';
+      $('qrSecret').textContent = 'Kunci 2FA belum valid. Klik "Reset Kunci 2FA" untuk membuat kunci baru (32 karakter base32) yang bisa di-enroll di Google Authenticator / Authy.';
+      if (info && info.reason) $('loginStep').textContent = '⚠ ' + info.reason;
       return;
     }
     $('qrWrapBox').style.display = '';
+    $('loginStep').textContent = 'Tahap verifikasi owner · PIN owner + kode 2FA';
     var img = $('qrImg'), cv = $('qrCanvas');
     img.style.display = 'none'; cv.style.display = 'none';
-    if (_paintQr(cv, lastOtp, 320)) { cv.style.display = 'block'; return; }
-    img.onload = function () { img.style.display = 'block'; cv.style.display = 'none'; };
-    img.onerror = function () { img.style.display = 'none'; if (_paintQr(cv, lastOtp, 280)) cv.style.display = 'block'; else $('qrWrapBox').style.display = 'none'; };
-    img.src = _qrUrl(lastOtp, 360);
+    var px = qrFitPx();
+    if (_paintQr(cv, lastOtp, px)) { cv.style.display = 'block'; }
+    else {
+      img.onload = function () { img.style.display = 'block'; cv.style.display = 'none'; };
+      img.onerror = function () { img.style.display = 'none'; if (_paintQr(cv, lastOtp, qrFitPx())) cv.style.display = 'block'; else $('qrWrapBox').style.display = 'none'; };
+      img.src = _qrUrl(lastOtp, Math.max(px, 360));
+    }
+    $('qrSecret').textContent = secret ? ('Secret: ' + secret) : '';
   }
   function showQrBig() {
     if (!lastOtp) return;
@@ -479,7 +492,7 @@
     $('btnStep1').style.display = 'none';
     $('twofaBox').style.display = 'block';
     api('POST', '/api/auth/setup2fa', { stage: stageTok }).then(function (d) {
-      drawQr(d.otpauth, d.secret);
+      drawQr(d.otpauth, d.secret, d);
     }).catch(function (e) {
       if (e.code === 'NEED_STEP1') { toast('Masukkan username & password dulu.', 'bad'); backToStep1(); return; }
       toast('Tidak bisa menampilkan barcode.', 'bad');
@@ -528,6 +541,19 @@
   }
   $('btnZoom').addEventListener('click', showQrBig);
   $('btnCloseQr').addEventListener('click', hideQrBig);
+  $('btn2faReset').addEventListener('click', function () {
+    if (!stageTok) return;
+    if (!confirm('Buat kunci 2FA baru? Kunci lama di Authenticator tidak berlaku lagi. Lanjut?')) return;
+    var b = $('btn2faReset'); b.disabled = true; b.textContent = 'Membuat kunci…';
+    api('POST', '/api/auth/setup2fa', { stage: stageTok, action: 'reset' }).then(function (d) {
+      b.disabled = false; b.textContent = '🔑 Reset Kunci 2FA';
+      drawQr(d.otpauth, d.secret, d);
+      toast(d.flashed ? 'Kunci 2FA baru dibuat. Scan QR atau ketik Secret di Authenticator.' : (d.invalid ? (d.reason || 'Kunci tidak valid.') : 'Kunci 2FA sudah valid.'));
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = '🔑 Reset Kunci 2FA';
+      toast((e && e.message) || 'Reset gagal. Pastikan tabel master_secret sudah dibuat.', 'bad');
+    });
+  });
   $('btnLogin').addEventListener('click', doLogin);
   $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('code').focus(); });
   $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
