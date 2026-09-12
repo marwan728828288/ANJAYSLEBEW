@@ -372,7 +372,7 @@
     for (var r = 0; r < n; r++) for (var cc2 = 0; cc2 < n; cc2++) if (q.isDark(r, cc2)) ctx.fillRect(ox + cc2 * mod, ox + r * mod, mod, mod);
     return true;
   }
-  function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=10&data=' + encodeURIComponent(data); }
+  function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=20&ecc=H&data=' + encodeURIComponent(data); }
   function drawQr(otpauth, secret) {
     lastOtp = otpauth || '';
     $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '(kosong)');
