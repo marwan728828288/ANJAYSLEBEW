@@ -40,6 +40,16 @@
       ]
     }
   ],
+  "rewrites": [
+    {
+      "source": "/api/worker/config",
+      "destination": "/api/worker"
+    },
+    {
+      "source": "/api/worker/command",
+      "destination": "/api/worker"
+    }
+  ],
   "redirects": [
     {
       "source": "/dashboard.html",

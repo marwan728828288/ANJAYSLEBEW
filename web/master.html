@@ -19,9 +19,7 @@
   }
   html,body{height:100%;}
   body{font-family:'Inter',sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden;
-    background-color:#070604;
-    background-image:url('messageImage_1787629523742.jpg');
-    background-size:contain;background-position:center;background-repeat:no-repeat;background-attachment:fixed;}
+    background-color:#070604;}
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:linear-gradient(165deg,rgba(9,8,6,.94),rgba(11,9,7,.86) 45%,rgba(13,11,8,.88) 65%,rgba(6,5,4,.96));}
   .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:28px 20px 46px;}
@@ -164,6 +162,16 @@
   .hcell .st{font-family:'Cinzel',serif;font-size:16px;margin-top:6px;}
   .hcell .st.okc{color:var(--green);}.hcell .st.badc{color:var(--red);}
   .hcell .dt{font-size:10px;color:var(--muted);margin-top:5px;}
+  .wdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);vertical-align:middle;margin-right:6px;box-shadow:0 0 0 3px rgba(239,106,106,.15);}
+  .wdot.on{background:var(--green);box-shadow:0 0 0 3px rgba(87,201,141,.15),0 0 12px rgba(87,201,141,.7);animation:throb 1.6s ease-in-out infinite;}
+  .wact{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px;}
+  .wfield{display:flex;flex-direction:column;gap:5px;margin-bottom:2px;}
+  .wfield label{font-size:9px;font-weight:800;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+  .wgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+  @media(max-width:560px){.wgrid{grid-template-columns:1fr;}}
+  .wchk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);min-height:38px;}
+  .wchk input{accent-color:var(--gold);}
+  .wcur{font-size:10.5px;color:var(--muted);background:rgba(216,180,90,.06);border:1px dashed var(--line);border-radius:9px;padding:8px 11px;line-height:1.6;}
 
   @media(max-width:640px){.wrap{padding:18px 12px 34px;}.card{padding:18px 15px 20px;}.sitegrid{grid-template-columns:1fr 1fr;}}
   @media(max-width:430px){.sitegrid{grid-template-columns:1fr;}.stats{grid-template-columns:1fr 1fr;}}
@@ -220,6 +228,7 @@
       <button class="active" data-v="ringkas">Ringkasan</button>
       <button data-v="claim">Semua Klaim</button>
       <button data-v="health">Kesehatan</button>
+      <button data-v="otomasi">Otomasi</button>
       <button data-v="staff" id="navStaff" style="display:none">Staff</button>
     </nav>
 
@@ -268,6 +277,66 @@
       </div>
     </section>
 
+    <!-- OTOMASI -->
+    <section id="view-otomasi" class="view">
+      <div class="card">
+        <div class="kicker"><span>Daemon Otomasi</span><div class="hr"></div></div>
+
+        <div id="wSetup" class="hint" style="display:none">
+          <b>Daemon belum terkoneksi ke panel.</b><br>
+          Tabel <code>worker_config</code>/<code>worker_state</code>/<code>worker_commands</code> belum dibuat.
+          Buka dashboard Supabase &raquo; SQL Editor, tempel isi <code>web/supabase/worker.sql</code>, jalankan.
+        </div>
+
+        <div id="wMain">
+          <div class="hrow" id="wHead"></div>
+          <div class="stats" id="wCounts" style="margin-top:14px;"></div>
+          <div class="wact" id="wActions"></div>
+          <div class="hint" id="wCurrent">Belum ada klaim sedang diproses.</div>
+
+          <div class="kicker" style="margin-top:18px;"><span>Parameter Daemon</span><div class="hr"></div></div>
+          <div class="wgrid">
+            <div class="wfield">
+              <label>Mode Input</label>
+              <select id="wMode">
+                <option value="cdp">CDP (Chrome owner)</option>
+                <option value="api">API (headers token)</option>
+              </select>
+            </div>
+            <div class="wfield">
+              <label>Port Chrome CDP</label>
+              <input id="wPort" type="number" min="1" max="65535" inputmode="numeric">
+            </div>
+            <div class="wfield">
+              <label>URL Match CDP</label>
+              <input id="wMatch" placeholder="bonussmb.com" maxlength="120">
+            </div>
+            <div class="wfield">
+              <label>Domain Bonus</label>
+              <input id="wDomain" placeholder="bonussmb.com" maxlength="120">
+            </div>
+            <div class="wfield">
+              <label>Interval Polling (ms)</label>
+              <input id="wInterval" type="number" min="500" max="600000" inputmode="numeric">
+            </div>
+            <div class="wfield">
+              <label>Klaim Paralel</label>
+              <input id="wConc" type="number" min="1" max="50" inputmode="numeric">
+            </div>
+            <div class="wfield">
+              <label>Max Retry</label>
+              <input id="wRetry" type="number" min="0" max="20" inputmode="numeric">
+            </div>
+            <div class="wfield">
+              <label>&nbsp;</label>
+              <div class="wchk"><input type="checkbox" id="wPaused"><label for="wPaused" style="letter-spacing:.05em;text-transform:none;">Jeda sementara (paused)</label></div>
+            </div>
+          </div>
+          <button class="btn" id="wSave" style="margin-top:14px;">Simpan Parameter</button>
+        </div>
+      </div>
+    </section>
+
     <!-- STAFF -->
     <section id="view-staff" class="view">
       <div class="card">
@@ -302,7 +371,7 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var toastTimer = null, claims = [], sites = {}, filters = { site: '', status: '', q: '' };
+  var toastTimer = null, wTimer = null, claims = [], sites = {}, filters = { site: '', status: '', q: '' };
   var currentTab = 'ringkas';
 
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -349,7 +418,10 @@
     Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('active', v.id === 'view-' + name); });
     if (name === 'claim') renderRows();
     if (name === 'health') loadHealth();
+    if (name === 'otomasi') loadWorker();
     if (name === 'staff') loadStaff();
+    if (name === 'otomasi') { if (wTimer) clearTimeout(wTimer); }
+    else { if (wTimer) { clearTimeout(wTimer); wTimer = null; } }
   }
 
   /* ---------- login (2 tahap: user+pass â†’ QR+PIN+2FA) + staff ---------- */
@@ -473,14 +545,14 @@
     boot();
   }
   function applyPerms() {
-    var nav = { ringkas: hasPerm('ringkas'), claim: hasPerm('datalaim'), health: hasPerm('pantau'), staff: hasPerm('staff') };
+    var nav = { ringkas: hasPerm('ringkas'), claim: hasPerm('datalaim'), health: hasPerm('pantau'), otomasi: hasPerm('pantau') || hasPerm('approve'), staff: hasPerm('staff') };
     Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
       var v = b.getAttribute('data-v');
       b.style.display = nav[v] ? '' : 'none';
     });
     $('navStaff').style.display = hasPerm('staff') ? '' : 'none';
     if (!nav[currentTab]) {
-      var first = ['ringkas', 'claim', 'health', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
+      var first = ['ringkas', 'claim', 'health', 'otomasi', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
       setTab(first);
     }
     var whois = acct.kind === 'owner' ? 'Owner' : ('Staff Â· ' + ((acct.staff && (acct.staff.fullname || acct.staff.username)) || 'ok'));
@@ -706,6 +778,118 @@
       clearTimeout(hTimer); hTimer = setTimeout(loadHealth, 60000);
     }).catch(function (e) { if (unAuth(e)) return bootFail(); toast('Gagal cek kesehatan.', 'bad'); clearTimeout(hTimer); hTimer = setTimeout(loadHealth, 60000); });
   }
+
+  /* ---------- otomasi (daemon worker) ---------- */
+  var wData = null;
+  function ageTxt(ms) {
+    if (ms === null || ms === undefined) return '-';
+    if (ms < 0) return 'barusan';
+    var s = Math.floor(ms / 1000);
+    if (s < 60) return s + ' dtk lalu';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + ' mnt lalu';
+    return Math.floor(m / 60) + ' jam lalu';
+  }
+  function renderWorker(d) {
+    wData = d;
+    if (!d.setup) {
+      $('wSetup').style.display = 'block';
+      $('wMain').style.display = 'none';
+      if (wTimer) { clearTimeout(wTimer); wTimer = setTimeout(loadWorker, 8000); }
+      return;
+    }
+    $('wSetup').style.display = 'none';
+    $('wMain').style.display = 'block';
+    var st = d.state, cf = d.config;
+    var status = (st && st.status) || 'offline';
+    var online = !!d.online;
+    var head =
+      '<div class="hcell"><div class="nm">Daemon</div><div class="st ' + (online ? 'okc' : 'badc') + '"><span class="wdot' + (online ? ' on' : '') + '"></span>' + esc(status) + '</div>' +
+      '<div class="dt">tinggal ' + ageTxt(d.ageMs) + '</div></div>' +
+      '<div class="hcell"><div class="nm">Mode</div><div class="st ' + (online ? 'okc' : 'badc') + '">' + esc((st && st.mode) || '-') + '</div><div class="dt">' + esc((cf && cf.mode) || '-') + '</div></div>' +
+      '<div class="hcell"><div class="nm">Alamat</div><div class="st">' + esc((st && st.hostname) || '-') + '</div><div class="dt">v' + esc((st && st.version) || '-') + '</div></div>' +
+      '<div class="hcell"><div class="nm">Terakhir Online</div><div class="st">' + esc(when((st && st.last_seen) || '')) + '</div><div class="dt">' + esc((st && st.started_at ? 'mulai ' + when(st.started_at) : '')) + '</div></div>';
+    $('wHead').innerHTML = head;
+
+    var c = (st && st.counts) || {};
+    $('wCounts').innerHTML =
+      '<div class="stat a"><b>' + (c.processed || 0) + '</b><span>Diproses</span></div>' +
+      '<div class="stat t"><b>' + (c.verified || 0) + '</b><span>Verifikasi OK</span></div>' +
+      '<div class="stat g"><b>' + (c.ok || 0) + '</b><span>Input Sukses</span></div>' +
+      '<div class="stat r"><b>' + (c.fail || 0) + '</b><span>Input Gagal</span></div>' +
+      '<div class="stat g"><b>' + (c.approved || 0) + '</b><span>Approve</span></div>' +
+      '<div class="stat r"><b>' + (c.rejected || 0) + '</b><span>Reject</span></div>' +
+      '<div class="stat r"><b>' + (c.errors || 0) + '</b><span>Error</span></div>';
+
+    var isPaused = status === 'paused' || !!(cf && cf.paused);
+    $('wActions').innerHTML =
+      '<button class="sm" id="wBtnPause">' + (isPaused ? '▶ Resume' : '❚❚ Pause') + '</button>' +
+      '<button class="sm" id="wBtnPoll">⟳ Proses Sekarang</button>' +
+      '<button class="sm" id="wBtnReload">Muat Ulang Config</button>' +
+      '<button class="sm danger" id="wBtnShutdown">Matikan Daemon</button>';
+    $('wBtnPause').addEventListener('click', function () { sendCmd(isPaused ? 'resume' : 'pause'); });
+    $('wBtnPoll').addEventListener('click', function () { sendCmd('poll_now'); });
+    $('wBtnReload').addEventListener('click', function () { sendCmd('reload'); });
+    $('wBtnShutdown').addEventListener('click', function () {
+      if (!confirm('Matikan daemon di PC owner?')) return;
+      sendCmd('shutdown');
+    });
+
+    var cur = (st && st.current) || [];
+    $('wCurrent').className = 'hint wcur' + (cur.length ? '' : '');
+    $('wCurrent').innerHTML = cur.length
+      ? ('Sedang diproses: ' + cur.map(function (x) { return '#' + esc(x.claim_no) + ' ' + esc(x.user_id) + ' (' + esc(x.site) + ')'; }).join(' &nbsp;·&nbsp; '))
+      : 'Belum ada klaim sedang diproses.';
+
+    if (cf) {
+      $('wMode').value = cf.mode || 'cdp';
+      $('wPort').value = cf.cdp_port || 9222;
+      $('wMatch').value = cf.cdp_url_match || '';
+      $('wDomain').value = cf.bonus_domain || '';
+      $('wInterval').value = cf.poll_interval_ms || 2500;
+      $('wConc').value = cf.per_site_concurrent || 2;
+      $('wRetry').value = cf.max_retry || 3;
+      $('wPaused').checked = !!cf.paused;
+    }
+    if (wTimer) { clearTimeout(wTimer); wTimer = setTimeout(loadWorker, 5000); }
+  }
+  function loadWorker() {
+    api('GET', '/api/worker').then(function (d) { renderWorker(d); })
+      .catch(function (e) {
+        if (unAuth(e)) return bootFail();
+        if (currentTab === 'otomasi') { if (wTimer) clearTimeout(wTimer); wTimer = setTimeout(loadWorker, 8000); }
+      });
+  }
+  function sendCmd(action) {
+    if (!hasPerm('approve')) { toast('Butuh izin Approve untuk mengontrol daemon.', 'bad'); return; }
+    api('POST', '/api/worker/command', { action: action }).then(function () {
+      toast('Perintah "' + action + '" terkirim.', 'ok');
+      setTimeout(loadWorker, 1200);
+    }).catch(function (e) { if (unAuth(e)) return bootFail(); toast((e && e.message) || 'Gagal kirim perintah.', 'bad'); });
+  }
+  $('wSave').addEventListener('click', function () {
+    if (!hasPerm('approve')) { toast('Butuh izin Approve untuk menyimpan parameter.', 'bad'); return; }
+    var body = {
+      mode: $('wMode').value,
+      cdp_port: parseInt($('wPort').value, 10) || 9222,
+      cdp_url_match: $('wMatch').value.trim(),
+      bonus_domain: $('wDomain').value.trim(),
+      poll_interval_ms: parseInt($('wInterval').value, 10) || 2500,
+      per_site_concurrent: parseInt($('wConc').value, 10) || 2,
+      max_retry: parseInt($('wRetry').value, 10) || 3,
+      paused: $('wPaused').checked
+    };
+    var b = $('wSave'); b.disabled = true; b.textContent = 'Menyimpan…';
+    api('POST', '/api/worker/config', body).then(function () {
+      b.disabled = false; b.textContent = 'Simpan Parameter';
+      toast('Parameter daemon disimpan.', 'ok');
+      sendCmd('reload');
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = 'Simpan Parameter';
+      if (unAuth(e)) return bootFail();
+      toast((e && e.message) || 'Gagal menyimpan.', 'bad');
+    });
+  });
 
   /* ---------- boot ---------- */
   function bootFail() { toast('Sesi berakhir. Login ulang.', 'bad'); setTimeout(function () { location.reload(); }, 900); }

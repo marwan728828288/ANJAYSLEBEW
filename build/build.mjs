@@ -122,7 +122,6 @@ recreateDir(outMaster);
 
 buildWebHtml('master.html', 'index.html', outMaster); num.MASTER++;
 
-copyFileSync(join(root, 'messageImage_1787629523742.jpg'), join(outMaster, 'messageImage_1787629523742.jpg'));
 copyFileSync(join(root, 'vercel.json'), join(outMaster, 'vercel.json'));
 copyFileSync(join(webSrc, 'asset', 'qrcode.js'), join(outMaster, 'qrcode.js'));
 copyDir(join(webSrc, 'supabase'), join(outMaster, 'supabase'));
@@ -142,39 +141,5 @@ for (const dir of [join(outWeb, 'api'), join(outMaster, 'api')]) {
   checkApiDir(dir);
 }
 
-/* ============================================================
-   2) EXTENSION (dist-extension/) — versi aman utk dipasang.
-   ============================================================ */
-const extFiles = [
-  'background.js', 'app.js', 'popup.js', 'content.js', 'detail_processor.js',
-  'tickets_monitor.js', 'bridge-scatter.js', 'web_claim_bridge.js', 'fill_claim_page.js', 'sb.js',
-  'lib/constants.js', 'lib/utils.js', 'lib/parser.js', 'lib/token.js',
-  'app.html', 'app.css', 'manifest.json', 'web_claim_dashboard.html',
-  'icons/icon16.png', 'icons/icon32.png', 'icons/icon48.png', 'icons/icon128.png',
-  'videos/lofi.mp4', 'messageImage_1787629523742.jpg'
-];
-const exHtmlObf = ['web_claim_dashboard.html', 'app.html'];
-const outExt = join(root, 'dist-extension');
-if (existsSync(outExt)) rmSync(outExt, { recursive: true, force: true });
-mkdirSync(outExt, { recursive: true });
-
-let failed = 0;
-for (const rel of extFiles) {
-  const src = join(root, rel);
-  if (!existsSync(src)) { console.log('skip (missing) ' + rel); continue; }
-  const dst = join(outExt, rel);
-  mkdirSync(dirname(dst), { recursive: true });
-  if (rel.endsWith('.js')) {
-    writeFileSync(dst, ob(readFileSync(src, 'utf8'), PRESET), 'utf8');
-    if (!check(rel, dst)) failed++;
-  } else if (exHtmlObf.includes(rel)) {
-    const obfHtml = readFileSync(src, 'utf8').replace(INLINE, (m, code) => `<script>${ob(code, PRESET)}</script>`);
-    writeFileSync(dst, obfHtml, 'utf8');
-    if (!checkHtml(rel, obfHtml)) failed++;
-  } else {
-    copyFileSync(src, dst);
-    console.log('copy ' + rel);
-  }
-}
-
-console.log(failed ? `\n[done] ${failed} file JS PERLU dicek manual` : '\n[done] all good');
+console.log(`
+[done] all good`);;
