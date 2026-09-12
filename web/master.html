@@ -429,6 +429,7 @@
   /* ---------- login (2 tahap: user+pass â†’ QR+PIN+2FA) + staff ---------- */
   var stageTok = '', acct = { kind: 'owner', perms: [] };
   var lastOtp = '';
+  var totpOffNow = false;
   var PERM_LABEL = { ringkas: 'Lihat ringkasan', datalaim: 'Lihat semua klaim', approve: 'Approve / Reject', hapus: 'Hapus klaim', pantau: 'Pantau kesehatan', staff: 'Kelola staff' };
   function hasPerm(p) { return acct.kind === 'owner' || (acct.perms || []).indexOf(p) >= 0; }
   function _paintQr(cv, data, dispPx) {
@@ -494,6 +495,7 @@
     $('btnStep1').style.display = 'none';
     $('twofaBox').style.display = 'block';
     api('POST', '/api/auth/setup2fa', { stage: stageTok }).then(function (d) {
+      totpOffNow = !!(d && d.totpOff);
       drawQr(d.otpauth, d.secret, d);
     }).catch(function (e) {
       if (e.code === 'NEED_STEP1') { toast('Masukkan username & password dulu.', 'bad'); backToStep1(); return; }
@@ -529,7 +531,7 @@
   $('password').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnStep1').click(); });
   function doLogin() {
     var pin = $('pin').value.trim(); if (!pin) { toast('Masukkan PIN owner.', 'bad'); return; }
-    var code = $('code').value.trim(); if (!code) { toast('Masukkan kode 2FA dari authenticator.', 'bad'); return; }
+    var code = $('code').value.trim(); if (!totpOffNow && !code) { toast('Masukkan kode 2FA dari authenticator.', 'bad'); return; }
     var b = $('btnLogin'); b.disabled = true;
     api('POST', '/api/auth', { pin: pin, code: code, stage: stageTok }).then(function () {
       $('pin').value = ''; $('code').value = ''; location.hash = '';

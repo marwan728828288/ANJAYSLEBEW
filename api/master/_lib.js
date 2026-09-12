@@ -102,8 +102,8 @@ function hmac(payload) {
 function ipHex(ip) { return Buffer.from(String(ip), 'utf8').toString('hex'); }
 function signSession(ip, ua) {
   const exp = Date.now() + TOKEN_TTL;
-  const core = exp + '_' + ipHex(ip) + '_' + uaHash(ua);
-  return core + '_' + hmac(core);   // delimiter '_' saja (IP berformat titik/colon aman)
+  const core = exp + '_0_0';
+  return core + '_' + hmac(core);
 }
 function verifySession(token, ip, ua) {
   if (!token || !OW_SECRET) return null;
@@ -119,8 +119,8 @@ function verifySession(token, ip, ua) {
   if (!crypto.timingSafeEqual(a, b)) return null;
   const bindIp = Buffer.from(parts[1], 'hex').toString('utf8');
   const bindUa = parts[2];
-  if (bindIp && ip && bindIp !== ip) return null;          // token dikunci ke IP
-  if (bindUa && ua && bindUa !== uaHash(ua)) return null;  // dan ke browser
+  if (bindIp !== '0' && bindIp && ip && bindIp !== ip) return null;
+  if (bindUa !== '0' && bindUa && ua && bindUa !== uaHash(ua)) return null;
   return { exp, ip: bindIp, ua: bindUa };
 }
 function readToken(req) {
@@ -141,7 +141,7 @@ function b64u(s) { return Buffer.from(String(s), 'utf8').toString('base64url'); 
 function unb64u(s) { try { return Buffer.from(String(s), 'base64url').toString('utf8'); } catch (e) { return ''; } }
 function signStage(ip, ua, email) {
   const exp = Date.now() + STAGE_TTL;
-  const core = 'S' + exp + '_' + ipHex(ip) + '_' + uaHash(ua) + '_' + b64u(email);
+  const core = 'S' + exp + '_0_0_' + b64u(email);
   return core + '_' + hmac(core);
 }
 function verifyStage(token, ip, ua) {
@@ -155,8 +155,8 @@ function verifyStage(token, ip, ua) {
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
   const bindIp = Buffer.from(parts[1], 'hex').toString('utf8');
   const bindUa = parts[2];
-  if (bindIp && ip && bindIp !== ip) return null;
-  if (bindUa && ua && bindUa !== uaHash(ua)) return null;
+  if (bindIp !== '0' && bindIp && ip && bindIp !== ip) return null;
+  if (bindUa !== '0' && bindUa && ua && bindUa !== uaHash(ua)) return null;
   return { exp, ip: bindIp, ua: bindUa, email: unb64u(parts[3]) };
 }
 function googleConfigured() { return !!(GOOGLE_CID && GOOGLE_CSEC); }
@@ -185,7 +185,7 @@ function readStaffToken(req) {
 }
 function signStaff(ip, ua, staffId) {
   const exp = Date.now() + STAFF_TTL;
-  const core = exp + '_' + ipHex(ip) + '_' + uaHash(ua) + '_' + b64u('s:' + staffId);
+  const core = exp + '_0_0_' + b64u('s:' + staffId);
   return core + '_' + hmac(core);
 }
 function verifyStaffToken(token, ip, ua) {
@@ -199,8 +199,8 @@ function verifyStaffToken(token, ip, ua) {
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
   const bindIp = Buffer.from(parts[1], 'hex').toString('utf8');
   const bindUa = parts[2];
-  if (bindIp && ip && bindIp !== ip) return null;
-  if (bindUa && ua && bindUa !== uaHash(ua)) return null;
+  if (bindIp !== '0' && bindIp && ip && bindIp !== ip) return null;
+  if (bindUa !== '0' && bindUa && ua && bindUa !== uaHash(ua)) return null;
   const id = unb64u(parts[3]);
   return { exp, ip: bindIp, ua: bindUa, staffId: id.slice(2) };
 }
