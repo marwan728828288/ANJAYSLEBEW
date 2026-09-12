@@ -4,3 +4,4 @@ deploy/
 .env*
 deploy-master/
 .vercel
+bot/config.local.js

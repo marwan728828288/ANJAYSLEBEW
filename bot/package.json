@@ -1,0 +1,8 @@
+{
+  "name": "scater-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Otak serverless 1-PC: antrian klaim -> API admin web bonus -> verify history",
+  "engines": { "node": ">=20" }
+}
