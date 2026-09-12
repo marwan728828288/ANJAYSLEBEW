@@ -148,7 +148,7 @@
   .staffrow .chip{font-size:10px;border:1px solid var(--line);border-radius:20px;padding:2px 8px;color:var(--soft);}
   .staffrow button{font-size:11px;}
   .staffrow .off{opacity:.45;}
-  .qrwrap{margin:14px auto 6px;padding:10px;background:#fff;border-radius:14px;width:max-content;max-width:100%;box-sizing:border-box;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
+  .qrwrap{margin:14px auto 6px;padding:14px;background:#fff;border-radius:14px;width:max-content;max-width:100%;box-sizing:border-box;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
   .qrwrap canvas{display:block;}
   #qrOverlay{display:none;position:fixed;inset:0;z-index:70;background:rgba(6,5,3,.96);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
   #qrOverlay .qbox{background:#fff;padding:14px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7);}
@@ -437,14 +437,14 @@
     cv.style.width = dispPx + 'px'; cv.style.height = dispPx + 'px';
     ctx.scale(dpr, dpr); ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, dispPx, dispPx);
-    var q = Q(0, 'M'); q.addData(data); q.make();
+    var q = Q(0, 'H'); q.addData(data); q.make();
     var n = q.getModuleCount(), mod = Math.floor(dispPx / (n + 8));
     var ox = Math.floor((dispPx - mod * (n + 8)) / 2);
     ctx.fillStyle = '#000000';
     for (var r = 0; r < n; r++) for (var cc2 = 0; cc2 < n; cc2++) if (q.isDark(r, cc2)) ctx.fillRect(ox + cc2 * mod, ox + r * mod, mod, mod);
     return true;
   }
-  function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=20&ecc=H&data=' + encodeURIComponent(data); }
+  function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=20&ecc=H&color=0-0-0&bgcolor=255-255-255&data=' + encodeURIComponent(data); }
   function drawQr(otpauth, secret) {
     lastOtp = otpauth || '';
     $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '(kosong)');
@@ -456,18 +456,21 @@
     $('qrWrapBox').style.display = '';
     var img = $('qrImg'), cv = $('qrCanvas');
     img.style.display = 'none'; cv.style.display = 'none';
+    if (_paintQr(cv, lastOtp, 320)) { cv.style.display = 'block'; return; }
     img.onload = function () { img.style.display = 'block'; cv.style.display = 'none'; };
     img.onerror = function () { img.style.display = 'none'; if (_paintQr(cv, lastOtp, 280)) cv.style.display = 'block'; else $('qrWrapBox').style.display = 'none'; };
-    img.src = _qrUrl(lastOtp, 300);
+    img.src = _qrUrl(lastOtp, 360);
   }
   function showQrBig() {
     if (!lastOtp) return;
-    var size = Math.max(220, Math.floor(Math.min(window.innerWidth * 0.84, window.innerHeight * 0.5, 520)));
+    var size = Math.max(240, Math.floor(Math.min(window.innerWidth * 0.88, window.innerHeight * 0.55, 560)));
     var img = $('qrBigImg'), cv = $('qrBigCanvas');
     img.style.display = 'none'; cv.style.display = 'none';
-    img.onload = function () { img.style.display = 'block'; };
-    img.onerror = function () { if (_paintQr(cv, lastOtp, size)) cv.style.display = 'block'; };
-    img.src = _qrUrl(lastOtp, size);
+    if (_paintQr(cv, lastOtp, size)) { cv.style.display = 'block'; } else {
+      img.onload = function () { img.style.display = 'block'; };
+      img.onerror = function () { if (_paintQr(cv, lastOtp, size)) cv.style.display = 'block'; };
+      img.src = _qrUrl(lastOtp, size);
+    }
     $('qrOverlay').style.display = 'flex';
   }
   function hideQrBig() { $('qrOverlay').style.display = 'none'; }
