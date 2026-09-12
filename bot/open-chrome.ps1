@@ -8,7 +8,7 @@ if (-not (Test-Path $chrome)) { $chrome = "$env:LOCALAPPDATA\Google\Chrome\Appli
 $profile = Join-Path $env:LOCALAPPDATA "ScaterCDPProfile"
 New-Item -ItemType Directory -Force -Path $profile | Out-Null
 
-Write-Host "Buka Chrome debug di port $port — lalu login/buka halaman bonus di dalamnya."
+Write-Host "Buka Chrome debug di port $port - lalu login/buka halaman bonus di dalamnya."
 Start-Process $chrome -ArgumentList @(
   "--remote-debugging-port=$port",
   "--user-data-dir=$profile",
@@ -20,5 +20,5 @@ try {
   $tabs = Invoke-RestMethod "http://127.0.0.1:$port/json"
   Write-Host "Chrome terdeteksi. Jumlah tab: $($tabs.Count)"
 } catch {
-  Write-Host "Chrome belum siap — tunggu beberapa detik lalu cek http://127.0.0.1:$port/json"
+  Write-Host "Chrome belum siap - tunggu beberapa detik lalu cek http://127.0.0.1:$port/json"
 }

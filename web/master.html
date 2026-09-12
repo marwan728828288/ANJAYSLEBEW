@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://api.qrserver.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="robots" content="noindex, nofollow">
-<title>PANEL MASTER · KLAIM BONUS SCATTER</title>
+<title>PANEL MASTER Â· KLAIM BONUS SCATTER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -125,7 +125,7 @@
     font-size:12.5px;font-weight:700;text-align:center;max-width:min(90vw,560px);
     box-shadow:0 14px 44px rgba(0,0,0,.6);transition:transform .4s cubic-bezier(.22,.61,.36,1);}
   .toast.show{transform:translate(-50%,0);}
-  .toast.ok{border-color:rgba(87,201,141,.55);}.toast.bad{border-color:rgba(239,106,106,.55);}.toast.info::before{content:"— ";}
+  .toast.ok{border-color:rgba(87,201,141,.55);}.toast.bad{border-color:rgba(239,106,106,.55);}.toast.info::before{content:"â€” ";}
 
   /* login */
   .login{max-width:360px;margin:10vh auto 0;}
@@ -150,8 +150,10 @@
   .staffrow .chip{font-size:10px;border:1px solid var(--line);border-radius:20px;padding:2px 8px;color:var(--soft);}
   .staffrow button{font-size:11px;}
   .staffrow .off{opacity:.45;}
-  .qrwrap{margin:14px auto 6px;padding:10px;background:#fff;border-radius:14px;width:198px;height:198px;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
-  .qrwrap canvas{display:block;width:178px;height:178px;image-rendering:pixelated;}
+  .qrwrap{margin:14px auto 6px;padding:10px;background:#fff;border-radius:14px;width:max-content;max-width:100%;box-sizing:border-box;box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.5);}
+  .qrwrap canvas{display:block;}
+  #qrOverlay{display:none;position:fixed;inset:0;z-index:70;background:rgba(6,5,3,.96);align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+  #qrOverlay .qbox{background:#fff;padding:14px;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.7);}
   .secretline{font-family:'Courier New',monospace;font-size:10px;color:var(--gold2);text-align:center;word-break:break-all;margin-top:8px;background:rgba(0,0,0,.4);border:1px dashed var(--line);border-radius:8px;padding:6px 8px;}
   .login .link{background:none;border:none;color:var(--blue);font-size:11px;cursor:pointer;text-decoration:underline;margin-top:10px;}
 
@@ -179,29 +181,36 @@
       <input type="password" id="password" autocomplete="current-password" placeholder="Password / kata sandi" maxlength="128">
       <button class="btn" id="btnStep1">Masuk</button>
       <div id="twofaBox">
-        <div class="sub">Tahap verifikasi owner · Scan barcode di aplikasi Authenticator,<br>lalu masukkan PIN owner + kode 2FA.</div>
-        <div class="qrwrap"><canvas id="qrCanvas" width="0" height="0"></canvas></div>
+        <div class="sub">Tahap verifikasi owner Â· Scan barcode di aplikasi Authenticator,<br>lalu masukkan PIN owner + kode 2FA.</div>
+        <div class="qrwrap" id="qrWrapBox"><img id="qrImg" alt="QR 2FA" style="display:none"><canvas id="qrCanvas" width="0" height="0" style="display:none"></canvas></div>
+        <button class="btn" id="btnZoom" style="background:linear-gradient(135deg,#a8862c,#6c531a);color:#ffe9a8;font-weight:800;margin-top:12px;">Perbesar QR untuk discan</button>
         <div class="secretline" id="qrSecret"></div>
         <div class="sub" style="color:var(--gold2);background:rgba(216,180,90,.08);border:1px dashed rgba(216,180,90,.35);border-radius:10px;padding:10px;margin-top:14px;">
-          Scan gagal? Buka Google Authenticator → + → Enter setup key →
-          tempel nilai <b>Secret</b> di atas &nbsp;(Time-based) → Add.
+          Scan gagal? Buka Google Authenticator â†’ + â†’ Enter setup key â†’
+          tempel nilai <b>Secret</b> di atas &nbsp;(Time-based) â†’ Add.
         </div>
         <input type="password" id="pin" inputmode="numeric" placeholder="PIN OWNER" maxlength="64" autocomplete="off">
         <input type="text" id="code" inputmode="numeric" placeholder="Kode 2FA (authenticator)" maxlength="6" autocomplete="one-time-code">
         <button class="btn" id="btnLogin">Masuk</button>
-        <div class="sub">Kode 2FA berganti tiap 30 detik.<br>Sesi dikunci ke perangkat ini · 12 jam.</div>
+        <div class="sub">Kode 2FA berganti tiap 30 detik.<br>Sesi dikunci ke perangkat ini Â· 12 jam.</div>
       </div>
     </div>
   </div>
 
   <!-- ===================== PANEL ===================== -->
+  <div id="qrOverlay">
+    <div class="qbox"><img id="qrBigImg" alt="QR 2FA" style="display:none"><canvas id="qrBigCanvas" width="0" height="0" style="display:none"></canvas></div>
+    <button class="btn" id="btnCloseQr" style="background:linear-gradient(135deg,#8a1f1f,#5c1414);color:#ffd9d9;font-weight:800;width:auto;padding:10px 22px;">Tutup</button>
+    <div class="sub" style="color:#c9b983;max-width:80%;">Arahkan kamera iPhone/iPad ke QR, jaga jarak 20-30 cm, cahaya cukup.</div>
+  </div>
+
   <div id="panel" style="display:none">
     <header class="rise" style="animation-delay:.02s">
       <div class="crest">B</div>
       <div class="brand">
         <small>Panel Master</small>
         <h1>KLAIM BONUS SCATTER BANDAR 80</h1>
-        <p id="hello">Terhubung ke penyimpanan…</p>
+        <p id="hello">Terhubung ke penyimpananâ€¦</p>
       </div>
       <div class="spacer"></div>
       <button class="sm" id="btnLogout">Keluar</button>
@@ -268,7 +277,7 @@
         </div>
         <div id="staffForm" class="sfcard" style="display:none">
           <input id="sfId" type="hidden">
-          <input id="sfUser" placeholder="Username (a-z, 0-9, . _ @ -) · min 3">
+          <input id="sfUser" placeholder="Username (a-z, 0-9, . _ @ -) Â· min 3">
           <input id="sfPass" placeholder="Password (min 8 karakter)">
           <input id="sfFull" placeholder="Nama lengkap">
           <div class="perms" id="sfPerms"></div>
@@ -282,7 +291,7 @@
     </section>
 
     <div class="foot">
-      <span>PANEL MASTER · <b>terpisah dari situs publik</b></span>
+      <span>PANEL MASTER Â· <b>terpisah dari situs publik</b></span>
       <span id="footTs"></span>
     </div>
   </div>
@@ -343,32 +352,55 @@
     if (name === 'staff') loadStaff();
   }
 
-  /* ---------- login (2 tahap: user+pass → QR+PIN+2FA) + staff ---------- */
+  /* ---------- login (2 tahap: user+pass â†’ QR+PIN+2FA) + staff ---------- */
   var stageTok = '', acct = { kind: 'owner', perms: [] };
+  var lastOtp = '';
   var PERM_LABEL = { ringkas: 'Lihat ringkasan', datalaim: 'Lihat semua klaim', approve: 'Approve / Reject', hapus: 'Hapus klaim', pantau: 'Pantau kesehatan', staff: 'Kelola staff' };
   function hasPerm(p) { return acct.kind === 'owner' || (acct.perms || []).indexOf(p) >= 0; }
+  function _paintQr(cv, data, dispPx) {
+    var Q = (typeof window.qrcode === 'function') ? window.qrcode : null;
+    if (!Q || !data) return false;
+    var dpr = Math.max(1, window.devicePixelRatio || 1), ctx = cv.getContext('2d');
+    cv.width = dispPx * dpr; cv.height = dispPx * dpr;
+    cv.style.width = dispPx + 'px'; cv.style.height = dispPx + 'px';
+    ctx.scale(dpr, dpr); ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, dispPx, dispPx);
+    var q = Q(0, 'M'); q.addData(data); q.make();
+    var n = q.getModuleCount(), mod = Math.floor(dispPx / (n + 8));
+    var ox = Math.floor((dispPx - mod * (n + 8)) / 2);
+    ctx.fillStyle = '#000000';
+    for (var r = 0; r < n; r++) for (var cc2 = 0; cc2 < n; cc2++) if (q.isDark(r, cc2)) ctx.fillRect(ox + cc2 * mod, ox + r * mod, mod, mod);
+    return true;
+  }
+  function _qrUrl(data, size) { return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&margin=10&data=' + encodeURIComponent(data); }
   function drawQr(otpauth, secret) {
-    var c = $('qrCanvas'), Q = (typeof window.qrcode === 'function') ? window.qrcode : (typeof QRCode === 'function' ? QRCode : null);
-    if (!Q || !otpauth) {
-      c.parentNode.style.display = 'none';
-      $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '2FA belum diatur di server. Silakan isi OWNER_TOTP_SECRET.');
+    lastOtp = otpauth || '';
+    $('qrSecret').textContent = (secret ? ('Secret: ' + secret) : '(kosong)');
+    if (!lastOtp) {
+      $('qrWrapBox').style.display = 'none';
+      if (!secret) $('qrSecret').textContent = '2FA belum diatur di server. Silakan isi OWNER_TOTP_SECRET.';
       return;
     }
-    var q = Q(0, 'M'); q.addData(otpauth); q.make();
-    var n = q.getModuleCount(), cell = 12, quiet = 4, dpr = Math.max(1, window.devicePixelRatio || 1);
-    var size = (n + quiet * 2) * cell;
-    c.width = size * dpr; c.height = size * dpr;
-    c.style.width = size + 'px'; c.style.height = size + 'px';
-    var ctx = c.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = '#000000';
-    var off = quiet * cell;
-    for (var r = 0; r < n; r++) for (var cc = 0; cc < n; cc++) if (q.isDark(r, cc)) ctx.fillRect(cc * cell + off, r * cell + off, cell, cell);
-    $('qrSecret').textContent = 'Secret: ' + (secret || '(kosong)');
+    $('qrWrapBox').style.display = '';
+    var img = $('qrImg'), cv = $('qrCanvas');
+    img.style.display = 'none'; cv.style.display = 'none';
+    img.onload = function () { img.style.display = 'block'; cv.style.display = 'none'; };
+    img.onerror = function () { img.style.display = 'none'; if (_paintQr(cv, lastOtp, 280)) cv.style.display = 'block'; else $('qrWrapBox').style.display = 'none'; };
+    img.src = _qrUrl(lastOtp, 300);
   }
+  function showQrBig() {
+    if (!lastOtp) return;
+    var size = Math.max(220, Math.floor(Math.min(window.innerWidth * 0.84, window.innerHeight * 0.5, 520)));
+    var img = $('qrBigImg'), cv = $('qrBigCanvas');
+    img.style.display = 'none'; cv.style.display = 'none';
+    img.onload = function () { img.style.display = 'block'; };
+    img.onerror = function () { if (_paintQr(cv, lastOtp, size)) cv.style.display = 'block'; };
+    img.src = _qrUrl(lastOtp, size);
+    $('qrOverlay').style.display = 'flex';
+  }
+  function hideQrBig() { $('qrOverlay').style.display = 'none'; }
   function enterTwoFa() {
-    $('loginStep').textContent = 'Tahap verifikasi owner · PIN owner + kode 2FA';
+    $('loginStep').textContent = 'Tahap verifikasi owner Â· PIN owner + kode 2FA';
     $('btnStep1').style.display = 'none';
     $('twofaBox').style.display = 'block';
     api('POST', '/api/auth/setup2fa', { stage: stageTok }).then(function (d) {
@@ -385,7 +417,7 @@
   $('btnStep1').addEventListener('click', function () {
     var u = $('username').value.trim(), p = $('password').value;
     if (!u || !p) { toast('Isi username & password.', 'bad'); return; }
-    var b = $('btnStep1'); b.disabled = true; b.textContent = 'Memeriksa…';
+    var b = $('btnStep1'); b.disabled = true; b.textContent = 'Memeriksaâ€¦';
     api('POST', '/api/auth/step1', { username: u, password: p }).then(function (d) {
       $('password').value = '';
       if (d.kind === 'staff') {
@@ -419,6 +451,8 @@
       b.disabled = false;
     });
   }
+  $('btnZoom').addEventListener('click', showQrBig);
+  $('btnCloseQr').addEventListener('click', hideQrBig);
   $('btnLogin').addEventListener('click', doLogin);
   $('pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('code').focus(); });
   $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
@@ -449,7 +483,7 @@
       var first = ['ringkas', 'claim', 'health', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
       setTab(first);
     }
-    var whois = acct.kind === 'owner' ? 'Owner' : ('Staff · ' + ((acct.staff && (acct.staff.fullname || acct.staff.username)) || 'ok'));
+    var whois = acct.kind === 'owner' ? 'Owner' : ('Staff Â· ' + ((acct.staff && (acct.staff.fullname || acct.staff.username)) || 'ok'));
     $('hello').textContent = 'Terhubung sebagai ' + whois + '.';
   }
 
@@ -491,7 +525,7 @@
     box.innerHTML = rows.map(function (r) {
       return '<div class="staffrow' + (r.active ? '' : ' off') + '">' +
         '<span class="id">' + esc(r.username) + '</span>' +
-        '<span class="meta">' + esc(r.fullname || '-') + ' · ' + esc((r.role || '').toUpperCase()) + (r.active ? '' : ' · NONAKTIF') + '</span>' +
+        '<span class="meta">' + esc(r.fullname || '-') + ' Â· ' + esc((r.role || '').toUpperCase()) + (r.active ? '' : ' Â· NONAKTIF') + '</span>' +
         '<span class="chips">' + (r.perms || []).map(function (p) { return '<span class="chip">' + esc(PERM_LABEL[p] || p) + '</span>'; }).join('') + '</span>' +
         '<span class="meta">dibuat ' + esc(when(r.created_at)) + '</span>' +
         '<button class="sm" data-sf="edit" data-id="' + esc(r.id) + '">Ubah Izin</button>' +
@@ -572,7 +606,7 @@
         '<div class="rt"><span class="tag ' + m.cls + '"><i></i>' + esc(m.txt) + '</span>' +
         '<span class="who">' + esc(c.user_id) + '</span>' +
         '<span class="time">' + esc(when(c.updated_at || c.created_at)) + '</span></div>' +
-        '<div class="rm"><b>' + esc(siteLabel(c.site)) + '</b> · ' + esc(c.kode_tiket) + '</div>' +
+        '<div class="rm"><b>' + esc(siteLabel(c.site)) + '</b> Â· ' + esc(c.kode_tiket) + '</div>' +
         '<div class="rg"><span>Bet <b>' + rupiah(c.betting) + '</b></span>' +
         '<span>Sc <b>' + esc(c.scatter) + '</b></span>' +
         (c.actual_bet ? '<span>Bet Asli <b>' + rupiah(c.actual_bet) + '</b></span>' : '') +
@@ -676,7 +710,7 @@
   /* ---------- boot ---------- */
   function bootFail() { toast('Sesi berakhir. Login ulang.', 'bad'); setTimeout(function () { location.reload(); }, 900); }
   function boot() {
-    $('hello').textContent = 'Terhubung ke penyimpanan…';
+    $('hello').textContent = 'Terhubung ke penyimpananâ€¦';
     if (hasPerm('ringkas') || hasPerm('datalaim')) {
       api('GET', '/api/admin?q=sites').then(function (d) {
         sites = {}; var sel = $('isite'); var opts = '<option value="">Semua situs</option>';
@@ -700,7 +734,7 @@
     acct = { kind: d.kind, perms: d.perms || [], staff: d.staff };
     showPanel();
   }).catch(function () {
-    // tanpa sesi → tampilkan login
+    // tanpa sesi â†’ tampilkan login
   });
 })();
 </script>
