@@ -13,7 +13,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { sbEnv } from './lib/supabase.js';
 import { workerControl, isSetupError } from './lib/control.js';
 import * as B from './lib/bonus.js';
-import { submitViaPage } from './submit-page.js';
+import * as T from './lib/tokens.js';
+import * as SN from './sniffer.js';
+import { submitViaPage, historyViaPage } from './submit-page.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const cfgPath = path.join(__dirname, 'config.local.js');
@@ -43,6 +45,7 @@ const HOSTNAME = os.hostname();
 let dbOk = false;          // worker_* tersedia (kontrollable via Panel)
 let dbNotified = false;
 let active = 0;
+let activeBySite = {};
 let activeNow = [];
 let shuttingDown = false;
 let counts = { processed: 0, verified: 0, ok: 0, fail: 0, approved: 0, rejected: 0, errors: 0 };
@@ -126,33 +129,75 @@ async function processClaim(claim) {
   if (!claim.id) return;
   counts.processed++;
   activeNow.push({ claim_no: claim.claim_no, user_id: claim.user_id, site: claim.site });
-  const hasAdminApi = !!(cfg.bonus && cfg.bonus.headers && cfg.bonus.headers['X-Access-Token']);
   try {
-    if (hasAdminApi) {
-      await sb.updateStatus(claim.id, { status: 'VERIFYING', label: 'CEK' });
-      const ver = await B.verifyClaim(cfg, claim);
-      counts.verified++;
-      L('VERIFY OK ' + tag + (ver.rows ? ' rows=' + ver.rows.length : ''));
-      await sb.updateStatus(claim.id, { status: 'SESUAI', label: 'VERIFIKASI BERHASIL', match: true });
+    const admin = B.adminFor(cfg, claim);
+    if (!admin) {
+      const dur = claim.updated_at ? Date.now() - new Date(claim.updated_at).getTime() : 0;
+      if (dur > (cfg.poll.maxRetry || 3) * 40000) {
+        counts.errors++;
+        await sb.updateStatus(claim.id, {
+          status: 'NO_TOKEN', label: 'BUTUH SESI ADMIN',
+          detail: 'Header Sniffer belum menangkap token admin untuk ' + B.hostFor(cfg, claim) + '. Buka halaman admin/history situs itu di Chrome debug (login).'
+        }).catch(() => {});
+        L('NOTOKEN ' + tag + ' :: ' + B.hostFor(cfg, claim));
+        return;
+      }
+      await sb.updateStatus(claim.id, { status: 'PENDING', label: 'TUNGGU TOKEN ADMIN' }).catch(() => {});
+      return;
     }
+
+    await sb.updateStatus(claim.id, { status: 'VERIFYING', label: 'CEK' });
+    const ver = await B.verifyClaimApi(cfg, claim, admin);
+    if (ver.lastErr && /invalid|expired|sesi|unauthorized|401/i.test(ver.lastErr)) {
+      await sb.updateStatus(claim.id, { status: 'NO_TOKEN', label: 'SESI ADMIN KADALUARSA', detail: String(ver.lastErr).slice(0, 300) }).catch(() => {});
+      L('APISESSION ' + tag + ' :: ' + ver.lastErr);
+      return;
+    }
+    const cmp = B.compareClaim(claim, ver);
+    counts.verified++;
+
+    if (!cmp.match) {
+      if (ver.records.length === 0) {
+        await sb.updateStatus(claim.id, {
+          status: 'CEK_KOSONG', label: 'HISTORY KOSONG',
+          detail: ver.host + ' tidak mengembalikan record utk ' + claim.user_id + ' (periksa sesi/host admin; atau ini user memang belum punya history).'
+        }).catch(() => {});
+        L('CEKEMPTY ' + tag + ' host=' + ver.host);
+        return;
+      }
+      counts.rejected++;
+      await sb.updateStatus(claim.id, {
+        status: 'REJECTED', label: 'TIDAK SESUAI', match: false,
+        actual_bet: ver.actualBet, actual_scatter: ver.actualScatter,
+        verdict: 'REJECTED', verdict_at: new Date().toISOString(),
+        detail: '[' + ver.host + '] ' + cmp.reasons.join('; ')
+      }).catch(() => {});
+      L('REJECT (tidak sesuai) ' + tag + ' :: ' + cmp.reasons.join('; '));
+      return;
+    }
+
+    await sb.updateStatus(claim.id, { status: 'SESUAI', label: 'ALIGN', match: true, actual_bet: ver.actualBet, actual_scatter: ver.actualScatter });
+    L('CEK OK ' + tag + ' bet=' + ver.actualBet + ' sc=' + ver.actualScatter + ' verdict=' + (ver.verdict || '-'));
+
+    if (ver.verdict === 'APPROVED' || ver.verdict === 'REJECTED') { await finalize(claim, ver.verdict); return; }
+
+    let sub;
     try {
-      let sub;
       if (cfg.mode === 'cdp') sub = await submitViaPage(cfg, claim);
       else sub = await B.submitClaim(cfg, claim);
-      const ok = !!(sub && sub.ok);
-      if (ok) counts.ok++; else counts.fail++;
-      await sb.updateStatus(claim.id, {
-        status: ok ? 'INPUT_OK' : 'INPUT_FAIL',
-        label: ok ? 'INPUT_OK' : 'INPUT GAGAL',
-        detail: String((sub && sub.message) || '').slice(0, 500)
-      });
-      L((ok ? 'SUBMIT OK ' : 'SUBMIT FAIL ') + tag + (ok ? '' : ' :: ' + (sub && sub.message)));
-      if (ok && hasAdminApi) await pollVerdict(claim);
     } catch (e) {
       if (String(e.message).startsWith('SUBMIT_ENDPOINT_NOT_DEFINED')) throw e;
+      sub = { ok: false, message: String(e.message || e) };
+    }
+    if (sub && sub.ok) {
+      counts.ok++;
+      await sb.updateStatus(claim.id, { status: 'INPUT_OK', label: 'INPUT_OK', detail: String(sub.message || '').slice(0, 500) });
+      L('SUBMIT OK ' + tag + ' :: ' + (sub.message || ''));
+      await pollVerdict(claim, !!admin);
+    } else {
       counts.fail++;
-      await sb.updateStatus(claim.id, { status: 'INPUT_FAIL', label: 'INPUT GAGAL', detail: String(e.message || e).slice(0, 500) });
-      L('SUBMIT FAIL ' + tag + ' :: ' + e.message);
+      await sb.updateStatus(claim.id, { status: 'INPUT_FAIL', label: 'INPUT GAGAL', detail: String((sub && sub.message) || '').slice(0, 500) });
+      L('SUBMIT FAIL ' + tag + ' :: ' + (sub && sub.message));
     }
   } catch (e) {
     counts.errors++;
@@ -163,33 +208,67 @@ async function processClaim(claim) {
   }
 }
 
-async function pollVerdict(claim, attempts = 0) {
-  if (attempts > 120) {
-    await sb.updateStatus(claim.id, { status: 'INPUT_OK', label: 'INPUT_OK', detail: 'belum ada verdict dari situs' });
+async function finalize(claim, verdict) {
+  counts[verdict === 'APPROVED' ? 'approved' : 'rejected']++;
+  await sb.setVerdict(claim.id, verdict).catch(() => {});
+  L('VERDICT ' + verdict + ' ' + claim.claim_no);
+}
+
+async function pollVerdict(claim, canApi, attempts = 0) {
+  if (attempts >= (cfg.poll.maxVerdict || 25)) {
+    await sb.updateStatus(claim.id, { status: 'INPUT_OK', label: 'INPUT_OK', detail: 'belum ada verdict dari situs' }).catch(() => {});
     return;
   }
-  await new Promise((r) => setTimeout(r, 30 * 1000));
+  await new Promise((r) => setTimeout(r, 15 * 1000));
   try {
-    const ver = await B.historyList(cfg, claim.user_id, { startDate: B.wibDayStr(), endDate: B.wibDayStr() });
-    const rows = Array.isArray(ver) ? ver : (ver && ver.data) || [];
-    const hit = rows.find((x) => String(x.transactionId || x.id || '').includes(claim.kode_tiket));
-    if (hit) {
-      const st = String(hit.status || hit.state || '').toUpperCase();
-      if (st === 'APPROVED' || st === 'SUCCESS') { counts.approved++; await sb.setVerdict(claim.id, 'APPROVED'); L('VERDICT APPROVED ' + claim.claim_no); return; }
-      if (st === 'REJECTED' || st === 'FAIL') { counts.rejected++; await sb.setVerdict(claim.id, 'REJECTED'); L('VERDICT REJECTED ' + claim.claim_no); return; }
+    const target = String(claim.kode_tiket || '').trim();
+    if (canApi) {
+      const admin = B.adminFor(cfg, claim);
+      if (admin) {
+        const v = await B.fetchVerdict(cfg, claim, admin);
+        if (v) return finalize(claim, v);
+      }
+    } else {
+      const rows = await historyViaPage(cfg, claim.user_id, { startDate: B.wibDayStr(), endDate: B.wibDayStr() });
+      for (const r of rows) {
+        const sid = String(B.recSid(r));
+        const v = B.recVerdict(r);
+        if (v && (sid === target || sid.includes(target) || sid.includes(claim.kode_tiket))) return finalize(claim, v);
+      }
     }
-  } catch (e) { /* tunggu putaran berikutnya */ }
-  return pollVerdict(claim, attempts + 1);
+  } catch (e) {
+    const admin = B.adminFor(cfg, claim);
+    if (admin) {
+      try {
+        const v = await B.fetchVerdict(cfg, claim, admin);
+        if (v) return finalize(claim, v);
+      } catch (e2) {}
+    }
+  }
+  return pollVerdict(claim, canApi, attempts + 1);
 }
 
 async function pump() {
   if (cfg.paused || !cfg.enabled) return;
-  if (active >= (cfg.poll.perSiteConcurrent || 2)) return;
-  const claims = await sb.getClaims('PENDING', 20);
+  let claims = [];
+  try { claims = await sb.getClaims('PENDING', 20); } catch (e) { L('pump fetch failed'); return; }
+  const bySite = {};
   for (const c of claims) {
-    if (active >= (cfg.poll.perSiteConcurrent || 2)) break;
-    active++;
-    processClaim(c).finally(() => active--);
+    const s = c.site || '_';
+    if (!bySite[s]) bySite[s] = [];
+    bySite[s].push(c);
+  }
+  for (const s of Object.keys(bySite)) {
+    const lim = cfg.poll.perSiteConcurrent || 2;
+    for (const c of bySite[s]) {
+      if ((activeBySite[s] || 0) >= lim) break;
+      active++;
+      activeBySite[s] = (activeBySite[s] || 0) + 1;
+      processClaim(c).finally(() => {
+        active--;
+        activeBySite[s] = Math.max(0, (activeBySite[s] || 0) - 1);
+      });
+    }
   }
 }
 
@@ -214,6 +293,26 @@ async function main() {
     }
   }
   console.log('Scater daemon start. mode=' + cfg.mode + ' poll=' + cfg.poll.intervalMs + 'ms conc=' + cfg.poll.perSiteConcurrent + ' db=' + (dbOk ? 'panel' : 'lokal'));
+  // Header Sniffer: pasang pe-ngintip request di tab (Network) + patch fetch/XHR.
+  // Token admin yang tertangkap otomatis dipakai CEK/verdict via API (bonus.js).
+  const sniffKnown = new Set(T.allHosts());
+  const snifferLoop = async () => {
+    try {
+      await SN.ensure(cfg, (host) => {
+        if (!sniffKnown.has(host)) {
+          sniffKnown.add(host);
+          L('Header admin terekam [' + host + '] — CEK/verdict kini pakai API, bukan tab.');
+        }
+      });
+      const st = T.statusText();
+      const ghost = st.filter((x) => !sniffKnown.has(x.host)).map((x) => x.host);
+      for (const h of ghost) { sniffKnown.add(h); L('Header admin terekam [' + h + '] — CEK/verdict kini pakai API, bukan tab.'); }
+    } catch (e) {
+      if (!/cdp\|sniffer/.test(e.message)) L('sniffer: ' + e.message);
+    }
+  };
+  await snifferLoop();
+  setInterval(snifferLoop, 10000);
   setInterval(() => { pump().catch((e) => L('pump ' + e.message)); }, cfg.poll.intervalMs || 2500);
   setInterval(() => { commandLoop().catch((e) => L('cmd ' + e.message)); }, 3000);
   setInterval(() => { beat().catch(() => {}); }, 5000);

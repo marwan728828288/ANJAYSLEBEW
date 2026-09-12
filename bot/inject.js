@@ -128,38 +128,48 @@ export const FILL_SETUP = `
       while (!openBtn && Date.now() - t0open < 10000) { await wait(500); openBtn = findOpenBtn(); }
       if (!openBtn) return { ok: false, message: 'Tombol tambah klaim tidak ditemukan' };
       openBtn.click();
-      await wait(900);
+      await wait(1200);
       var dialog = findDialogRoot();
-      var situsDropdown = null, tipeDropdown = null;
-      if (dialog) {
-        var combos = qa('[role="combobox"]', dialog);
-        situsDropdown = combos[0] || null;
-        tipeDropdown = combos[1] || null;
+      if (!dialog) return { ok: false, message: 'Dialog form tidak muncul' };
+      var combos = qa('[role="combobox"]', dialog);
+      var situsPopup = combos[0] || null;
+      var tipePopup = combos[1] || null;
+      if (situsPopup) await clickSelectAndPick(situsPopup, data.site);
+      await wait(250);
+      if (tipePopup) await clickSelectAndPick(tipePopup);
+      await wait(350);
+      var combos2 = qa('[role="combobox"]', dialog);
+      if (combos2.length >= 3 && combos2[2] && combos2[2] !== situsPopup && combos2[2] !== tipePopup) {
+        await clickSelectAndPick(combos2[2]);
+        await wait(250);
       }
-      try {
-        situsDropdown = situsDropdown || document.evaluate('//*[@id="radix-\\u00ABr9\\u00BB"]/div[2]/form/div[1]/div[2]/div', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        tipeDropdown = tipeDropdown || document.evaluate('//*[@id="radix-\\u00ABr9\\u00BB"]/div[2]/form/div[2]/div[2]/div', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-      } catch (e) {}
-      if (situsDropdown) await clickSelectAndPick(situsDropdown, data.site);
-      await wait(120);
-      if (tipeDropdown) await clickSelectAndPick(tipeDropdown);
-      await wait(120);
       var userInput = document.querySelector('input[placeholder="User ID"]');
       if (userInput) { triggerInput(userInput, userIdVal); await wait(100); }
       var kodeInput = document.querySelector('input[placeholder="Kode Tiket"]');
       if (kodeInput) { triggerInput(kodeInput, data.kodeTiket); await wait(100); }
-      var bettingInput = document.querySelector('input[type="text"][inputmode="numeric"][placeholder="#######"]');
-      if (bettingInput) { triggerInput(bettingInput, data.betting); await wait(100); }
-      await wait(150);
-      var scatterOk = await fillScatter(data.scatter, dialog);
-      if (!scatterOk) return { ok: false, message: 'Scatter tidak valid atau tidak ditemukan' };
-      var saveBtn = document.querySelector('button[data-slot="button"]');
-      if (saveBtn) saveBtn.click();
+      if (data.link) {
+        var linkInput = document.querySelector('input[placeholder*="Link"]');
+        if (linkInput) { triggerInput(linkInput, data.link); await wait(100); }
+      }
+      var saveBtn = dialog.querySelector('button[data-slot="button"]') || qa('button', dialog).find(function (b) { return /simpan|save|submit/i.test(b.textContent || ''); });
+      if (!saveBtn) return { ok: false, message: 'Tombol Simpan Data tidak ditemukan' };
+      saveBtn.click();
       var toastMessage = await waitForToast();
       var finalMessage = toastMessage || 'Toast tidak terdeteksi';
       return { ok: isLikelySuccess(finalMessage), message: finalMessage };
     } catch (errFill) {
-      return { ok: false, message: 'Script form gagal: ' + String((errFill && errFill.message) || errFill); }
+      return { ok: false, message: 'Script form gagal: ' + String((errFill && errFill.message) || errFill) };
+    }
+  };
+  window.__bonusApi = async function (path, q) {
+    try {
+      var qs = new URLSearchParams((q || {})).toString();
+      var res = await fetch(path + (qs ? '?' + qs : ''), { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      var body = null;
+      try { body = await res.json(); } catch (e) {}
+      return { ok: res.ok, status: res.status, data: body };
+    } catch (e) {
+      return { ok: false, status: 0, data: null, error: String((e && e.message) || e) };
     }
   };
   return true;

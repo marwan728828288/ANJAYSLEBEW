@@ -7,7 +7,7 @@ export function sbEnv(cfg) {
   return {
     async getClaims(status, limit) {
       const qs = new URLSearchParams({
-        select: 'id,claim_no,site,user_id,kode_tiket,betting,scatter,created_at',
+        select: 'id,claim_no,site,user_id,kode_tiket,betting,scatter,status,label,detail,updated_at,created_at',
         status: 'eq.' + status,
         order: 'created_at.asc',
         limit: String(limit || 50)
@@ -19,7 +19,7 @@ export function sbEnv(cfg) {
       return r.json();
     },
     async updateStatus(id, changes) {
-      const qs = new URLSearchParams({ id: 'eq.' + id, status: 'eq.PENDING' });
+      const qs = new URLSearchParams({ id: 'eq.' + id });
       const r = await fetch(cfg.url + '/rest/v1/claims?' + qs.toString(), {
         method: 'PATCH',
         headers: { apikey: cfg.key, Authorization: 'Bearer ' + cfg.key, 'Content-Type': 'application/json', Prefer: 'return=representation' },
