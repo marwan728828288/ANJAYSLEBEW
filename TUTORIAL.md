@@ -101,3 +101,5 @@ Output ada di `deploy/` (web) dan `dist-extension/` (extension). Salin isi
   policy `auth.role()='authenticated'`** (login owner di dashboard & extension).
 - Proteksi terkuat justru: repo **privat** + extension **tidak dibagikan**.
   Ubah repo ini jadi **Private** untuk menutup akses baca kode publik.
+# Otomasi Web (autoscater1-master)
+Panel Master -> tab Otomasi mengontrol daemon bot/worker.js lewat endpoint /api/worker/*. Terapkan dulu web/supabase/worker.sql di Supabase SQL Editor.

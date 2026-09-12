@@ -30,3 +30,8 @@ menentukan approve/reject.
 3. Extension terproteksi dipasang dari `AUTO_SCATER_EXTENSION_PROTECTED_v2.zip`.
 4. Daftarkan situs di tabel `sites`, isi `bonus_url` yang benar, baru `active=true`.
    Situs `active=false` **tidak** akan diinput ke web bonus manapun (aman dari salah input).
+## Otomasi dari Panel Master (tanpa extension)
+- Buka Panel Master -> tab *Otomasi* (izin pantau/approve) untuk lihat daemon & kirim perintah.
+- Endpoint: GET /api/worker (status), POST /api/worker/config (parameter), POST /api/worker/command (pause|resume|poll_now|reload|shutdown).
+- Setup sekali saja: jalankan isi web/supabase/worker.sql di Supabase > SQL Editor (buat worker_config/worker_state/worker_commands).
+- Jalankan daemon: node bot/worker.js (CDP via bot/open-chrome.ps1). Tanpa tabel worker_* daemon tetap berjalan mode lokal.
