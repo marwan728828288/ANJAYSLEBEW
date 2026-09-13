@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JUTAWANBET CLAIM - Klaim &amp; Cek Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">JB</span>
+    <div>
+      <div class="brand-name">JUTAWANBET <span>CLAIM</span></div>
+      <div class="brand-sub">Klaim Scatter Bet Online</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="#/klaim" class="nav-link active">Klaim Baru</a>
+    <a href="#/status" class="nav-link">Cek Status</a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- ================= KLAIM ================= -->
+  <section id="page-klaim" class="page-view active">
+    <div class="hero">
+      <div class="hero-tag">FORM KLAIM SCATTER</div>
+      <h1>Isi Kode Tiket,<br>Kami yang Cek Sisanya.</h1>
+      <p>Masukkan kode tiket dan nomor member. Sistem akan mengarahkan klaim ke situs yang benar, memeriksa nominal dan scatter secara ganda, lalu memberi keputusan otomatis.</p>
+    </div>
+
+    <div class="card form-card">
+      <div class="form-step">
+        <span class="step-no">1</span>
+        <div class="step-body">
+          <label>Toko / Situs Asal Klaim</label>
+          <select id="f-situs">
+            <option value="">-- Pilih situs klaim --</option>
+          </select>
+          <p class="hint">Pilih situs sesuai tempat member bermain. Klaim dari bandar akan diproses di bandar, klaim dari latoto diproses di latoto.</p>
+        </div>
+      </div>
+
+      <div class="form-step">
+        <span class="step-no">2</span>
+        <div class="step-body">
+          <label>User ID / Nomor Member</label>
+          <input id="f-userid" type="text" placeholder="Contoh: 8921341" autocomplete="off">
+          <p class="hint">Nomor member di situs tersebut, tanpa tanda tambahan.</p>
+        </div>
+      </div>
+
+      <div class="form-step">
+        <span class="step-no">3</span>
+        <div class="step-body">
+          <label>Kode Tiket</label>
+          <input id="f-kode" type="text" placeholder="Contoh: 1001234567890123456" maxlength="24" autocomplete="off">
+          <p class="hint">Kode tiket yang tampil pada bukti scatter member.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-step">
+          <span class="step-no">4</span>
+          <div class="step-body">
+            <label>Nominal Betting (Rp)</label>
+            <input id="f-betting" type="text" inputmode="numeric" placeholder="Contoh: 50000" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-step">
+          <span class="step-no">5</span>
+          <div class="step-body">
+            <label>Jumlah Scatter</label>
+            <select id="f-scatter">
+              <option value="">-- Scatter --</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-klaim" class="btn-primary">Kirim Klaim</button>
+      <div id="klaim-result" class="result-box hidden"></div>
+    </div>
+  </section>
+
+  <!-- ================= STATUS ================= -->
+  <section id="page-status" class="page-view">
+    <div class="hero alt">
+      <div class="hero-tag">LACAK KLAIM</div>
+      <h1>Cek Status Klaim Kamu.</h1>
+      <p>Masukkan kode tiket atau nomor referensi yang kamu dapat saat klaim dikirim. Status terbaru tampil di bawah.</p>
+    </div>
+
+    <div class="card status-card">
+      <div class="search-row">
+        <input id="s-key" type="text" placeholder="Kode tiket atau nomor ref (contoh: 1001234567890123456)">
+        <button id="btn-status" class="btn-primary">Cari</button>
+      </div>
+
+      <div id="status-result" class="result-box hidden"></div>
+
+      <div class="divider"><span>Riwayat Terakhir</span></div>
+      <div id="recent-list" class="recent-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footbar">
+  <span>JUTAWANBET CLAIM &middot; Versi demo web</span>
+  <span>Data tersimpan lokal di browser sebelum terhubung ke otak proses</span>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/sites.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

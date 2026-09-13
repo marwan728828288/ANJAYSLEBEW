@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "AUTO RELAX by AA",
+  "version": "2.11",
+  "permissions": ["tabs", "scripting", "alarms", "webRequest", "storage", "unlimitedStorage", "identity", "clipboardRead", "downloads", "offscreen"],
+  "host_permissions": ["<all_urls>"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https: wss: data: blob:; object-src 'self'"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://my.livechatinc.com/chats/*", "https://my.livechatinc.com/archives/*"],
+      "js": ["content/livechat-bg.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://my.livechatinc.com/chats/*", "https://my.livechatinc.com/archives/*"],
+      "js": ["content/livechat-indicator.js", "content/livechat-ocr.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/livechat-ss.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["pages/ocr-frame.html", "pages/ocr-frame.js", "lib/tesseract.min.js", "lib/worker.min.js", "lib/worker-shim.js"],
+      "matches": ["https://my.livechatinc.com/*", "<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_title": "Buka Dashboard"
+  },
+  "background": {
+    "service_worker": "background/background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png"
+  }
+}

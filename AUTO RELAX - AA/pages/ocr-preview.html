@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCR Pipeline Preview — AUTO RELAX</title>
+<style>
+:root {
+  --bg: #080b14;
+  --card: #121628;
+  --card2: #0c0f1a;
+  --border: rgba(99,102,241,0.15);
+  --primary: #818cf8;
+  --primary-deep: #6366f1;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --dim: #64748b;
+  --success: #34d399;
+  --warn: #fcd34d;
+  --danger: #f87171;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 90% 100%, rgba(56,189,248,0.05) 0%, transparent 55%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+header {
+  position: sticky; top:0; z-index:50;
+  background: rgba(12,15,28,0.9); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 22px;
+  display:flex; align-items:center; flex-wrap:wrap; gap:10px 16px;
+}
+.hd-title { font-size:17px; font-weight:800; letter-spacing:.4px; }
+.hd-title .em { color: var(--primary); }
+.hd-sub { font-size:11px; color: var(--dim); width:100%; }
+.hd-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.btn {
+  padding:7px 14px; border:none; border-radius:8px; cursor:pointer;
+  font-size:12px; font-weight:600; color:#fff;
+  background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+  box-shadow: 0 2px 10px rgba(99,102,241,0.25);
+  transition: all .18s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(99,102,241,0.35); }
+.btn:active { transform: scale(.96); }
+.btn:disabled { opacity:.45; cursor:default; transform:none; }
+.btn.ghost {
+  background: rgba(42,48,72,0.7); color: var(--muted);
+  border: 1px solid var(--border); box-shadow:none;
+}
+.btn.ghost:hover { color:var(--text); background: rgba(55,65,81,0.8); }
+.btn.warn { background: linear-gradient(135deg,#d97706,#f59e0b); box-shadow: 0 2px 10px rgba(245,158,11,0.2); }
+.chk { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); cursor:pointer; user-select:none; }
+.chk input { accent-color: var(--primary); width:15px; height:15px; cursor:pointer; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 18px 22px 60px; }
+
+.info-bar {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
+  background: var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px 16px;
+}
+.info-item { font-size:11px; color: var(--muted); background: rgba(15,23,42,0.7); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
+.info-item b { display:block; font-size:9px; color: var(--dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+.info-item span { color: var(--text); font-weight:600; font-family:'Consolas',monospace; font-size:11px; }
+.info-item.wide { flex:1; min-width:200px; }
+
+.stages { display:grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap:14px; }
+.stage-card {
+  background: var(--card); border:1px solid var(--border); border-radius:14px;
+  overflow:hidden; transition: border-color .2s, box-shadow .2s;
+}
+.stage-card:hover { border-color: rgba(99,102,241,0.3); box-shadow: 0 0 24px rgba(99,102,241,0.08); }
+.stage-head {
+  display:flex; align-items:center; gap:8px; padding:9px 12px;
+  border-bottom:1px solid var(--border);
+}
+.stage-num {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background: rgba(99,102,241,0.15); color: var(--primary);
+  font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
+}
+.stage-title { font-size:12px; font-weight:700; }
+.stage-desc { font-size:10px; color: var(--dim); margin-left:auto; text-align:right; }
+.stage-canvas-wrap { background: repeating-conic-gradient(#1a1f33 0% 25%, #161a2b 0% 50%) 50% / 18px 18px; }
+.stage-canvas-wrap canvas { display:block; width:100%; height:auto; cursor:zoom-in; }
+.stage-foot { padding:8px 12px; font-size:10px; color: var(--muted); display:flex; gap:8px; align-items:center; }
+.stage-foot .badge {
+  padding:2px 8px; border-radius:8px; font-weight:700; font-size:9px;
+  background: rgba(34,197,94,0.12); color: var(--success);
+}
+.badge.dim { background: rgba(100,116,139,0.15); color: var(--dim); }
+
+.size-panel {
+  background: var(--card); border:1px solid var(--border); border-radius:14px;
+  padding:16px 18px; margin-bottom:16px;
+}
+.size-title { font-size:14px; font-weight:800; }
+.size-title .em { color: var(--primary); }
+.size-sub { font-size:11px; color: var(--dim); margin-top:4px; line-height:1.6; }
+.size-controls { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.sz-field { display:flex; flex-direction:column; gap:4px; font-size:10px; color: var(--dim); text-transform:uppercase; letter-spacing:.5px; }
+.sz-field input {
+  width:110px; padding:9px 10px; border-radius:9px; border:1px solid var(--border);
+  background: var(--card2); color: var(--text); font-family:'Consolas',monospace;
+  font-size:14px; font-weight:700; text-align:center; outline:none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.sz-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.sz-x { font-size:18px; color: var(--dim); padding-bottom:10px; }
+.sz-presets { display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; }
+.sz-presets button {
+  padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:600;
+  font-family:'Consolas',monospace; color: var(--muted);
+  background: rgba(42,48,72,0.6); border:1px solid var(--border); transition: all .15s;
+}
+.sz-presets button:hover { color: var(--text); border-color: rgba(99,102,241,0.4); }
+.sz-presets button.active { background: rgba(99,102,241,0.15); color:#c7d2fe; border-color: rgba(99,102,241,0.5); }
+.sz-result { margin-top:14px; }
+.sz-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap:8px; }
+.sz-cell { background: rgba(15,23,42,0.7); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+.sz-cell b { display:block; font-size:9px; color: var(--dim); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+.sz-cell span { color: var(--text); font-weight:700; font-family:'Consolas',monospace; font-size:12px; }
+.sz-note { margin-top:10px; font-size:11px; line-height:1.7; border-radius:10px; padding:10px 12px; }
+.sz-note.ok { background: rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2); color:#a7f3d0; }
+.sz-note.warn { background: rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); color:#fde68a; }
+.sz-guide { margin-top:12px; border-top:1px dashed var(--border); padding-top:10px; font-size:11px; color: var(--muted); line-height:1.9; }
+.sz-guide b { color: var(--text); }
+.sz-guide code { font-family:'Consolas',monospace; color:#c7d2fe; background: rgba(99,102,241,0.1); padding:1px 5px; border-radius:5px; font-size:10px; }
+
+.preproc-panel {
+  background: var(--card); border:1px solid var(--border); border-radius:14px;
+  padding:16px 18px; margin-bottom:16px;
+}
+.preproc-title { font-size:14px; font-weight:800; }
+.preproc-title .em { color: var(--primary); }
+.preproc-sub { font-size:11px; color: var(--dim); margin-top:4px; line-height:1.6; }
+.preproc-btns { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+.preproc-btn {
+  padding:7px 14px; border-radius:9px; cursor:pointer;
+  background: rgba(42,48,72,0.6); color: var(--muted);
+  border:1px solid var(--border); transition: all .15s;
+  display:flex; flex-direction:column; align-items:center; gap:1px; min-width:122px;
+}
+.preproc-btn .pp-name { font-size:12px; font-weight:700; line-height:1.2; }
+.preproc-btn .pp-tag { font-size:9px; font-weight:500; opacity:.72; line-height:1.25; }
+.preproc-btn:hover { color: var(--text); border-color: rgba(99,102,241,0.4); }
+.preproc-btn.on {
+  background: rgba(245,158,11,0.16); color: var(--warn);
+  border-color: rgba(245,158,11,0.55); box-shadow: 0 0 12px rgba(245,158,11,0.15);
+}
+.preproc-btn.on .pp-tag { opacity:.95; }
+.preproc-btn.off { opacity:.6; }
+
+.crop-modal {
+  position: fixed; inset:0; z-index:980; background: rgba(0,0,0,0.92);
+  display:flex; align-items:center; justify-content:center;
+}
+.crop-modal.hidden { display:none; }
+.crop-inner {
+  width:min(96vw,1200px); max-height:94vh; display:flex; flex-direction:column;
+  background: var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.crop-head { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); }
+.crop-head .t { font-size:14px; font-weight:800; }
+.crop-head .t .em { color: var(--primary); }
+.crop-head .d { font-size:11px; color: var(--dim); }
+.crop-head .x { margin-left:auto; }
+.crop-body {
+  position:relative; overflow:auto; flex:1; min-height:220px;
+  background: repeating-conic-gradient(#1a1f33 0% 25%, #161a2b 0% 50%) 50%/18px 18px;
+}
+#cropStageCanvas { display:block; cursor:crosshair; image-rendering:auto; }
+.crop-zoom { display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:8px 14px; border-bottom:1px solid var(--border); font-size:11px; color:var(--muted); }
+.crop-zoom button {
+  padding:3px 10px; border-radius:7px; cursor:pointer; font-size:12px; font-weight:700;
+  background: rgba(42,48,72,0.7); color: var(--muted); border:1px solid var(--border); transition: all .15s;
+}
+.crop-zoom button:hover { color: var(--text); border-color: rgba(99,102,241,0.4); }
+.crop-zoom .crop-scale-sep { opacity:.35; margin:0 4px; }
+.crop-zoom .crop-scale-in {
+  width:64px; padding:3px 6px; border-radius:7px; font-family:'Consolas',monospace; font-size:12px;
+  background: var(--card2); color: var(--text); border:1px solid var(--border); outline:none; text-align:center;
+}
+.crop-zoom .crop-scale-in:focus { border-color: var(--primary); }
+.crop-zoom .crop-scale-warn {
+  font-size:10px; color: var(--warn); background: rgba(245,158,11,0.1);
+  border:1px solid rgba(245,158,11,0.3); border-radius:7px; padding:3px 8px;
+  max-width:560px; line-height:1.5;
+}
+.crop-scale-warn-top {
+  font-size:11px; color: var(--warn); background: rgba(245,158,11,0.12);
+  border:1px solid rgba(245,158,11,0.35); border-radius:8px; padding:6px 10px;
+  width:100%; line-height:1.5;
+}
+.crop-readout { padding:12px 16px; border-bottom:1px solid var(--border); }
+.crop-prompt-wrap { padding:12px 16px; }
+.crop-prompt-label { font-size:11px; color: var(--muted); margin-bottom:6px; font-weight:700; }
+#cropPrompt {
+  width:100%; height:118px; resize:vertical;
+  background: var(--card2); border:1px solid var(--border); border-radius:10px;
+  color: #cbd5e1; font-family:'Consolas',monospace; font-size:11px; line-height:1.6;
+  padding:10px 12px; outline:none;
+}
+.crop-actions { display:flex; gap:8px; justify-content:flex-end; padding:0 16px 16px; }
+
+.ocr-panel {
+  margin-top:18px; background: var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:16px;
+}
+.ocr-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+#ocrStatus { font-size:12px; color: var(--dim); }
+.ocr-codes { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.auto-result-hdr {
+  width:100%; font-size:11px; font-weight:800; color: var(--warn);
+  letter-spacing:.3px; margin-bottom:2px;
+}
+.auto-result-hdr.warn {
+  color:#f87171; /* merah — hasil auto TANPA +Ambil (belum lengkap) */
+  font-size:12px;
+}
+.ocr-chip {
+  font-family:'Consolas',monospace; font-size:13px; font-weight:700; letter-spacing:.5px;
+  padding:6px 12px; border-radius:8px;
+  background: rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#c7d2fe;
+}
+.ocr-chip.best { background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.45); color: var(--warn); }
+.ocr-chip .src { font-size:9px; color: var(--dim); font-weight:500; margin-left:6px; }
+.auto-result-wrap { margin-top:12px; }
+.auto-result-wrap canvas {
+  max-width:100%; max-height:420px; display:block;
+  border:1px solid var(--border); border-radius:10px; background:#fff;
+  cursor:zoom-in; margin-top:6px;
+}
+.ocr-raw {
+  margin-top:12px; max-height:320px; overflow:auto;
+  font-family:'Consolas',monospace; font-size:11px; line-height:1.6; white-space:pre-wrap;
+  background: var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px;
+  color: #cbd5e1;
+}
+.ocr-raw .sep { color: var(--primary); }
+.ocr-note { margin-top:12px; font-size:11px; color: var(--dim); background: rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:10px 12px; }
+.auto-prompt-wrap { margin-top:14px; }
+#autoPrompt {
+  width:100%; height:150px; resize:vertical;
+  background: var(--card2); border:1px solid var(--border); border-radius:10px;
+  font-family:'Consolas',monospace; font-size:11px; line-height:1.6; color:var(--text);
+  padding:10px 12px; box-sizing:border-box;
+}
+.auto-prompt-actions { margin-top:8px; display:flex; gap:8px; }
+
+.lightbox {
+  position: fixed; inset:0; z-index: 999;
+  background: rgba(0,0,0,0.88); display:flex; align-items:center; justify-content:center;
+  cursor: zoom-out;
+}
+.lightbox.hidden { display:none; }
+.lb-inner { max-width:94vw; max-height:92vh; overflow:auto; cursor: grab; }
+.lb-inner canvas { display:block; image-rendering: auto; }
+.lb-caption { position: fixed; bottom:14px; left:50%; transform:translateX(-50%); font-size:11px; color:#cbd5e1; background:rgba(15,23,42,0.9); border:1px solid var(--border); padding:6px 12px; border-radius:8px; }
+
+.drop-hint {
+  position: fixed; inset:0; z-index: 800;
+  background: rgba(8,11,20,0.9); border: 3px dashed rgba(99,102,241,0.5);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:800; color: var(--primary);
+}
+.drop-hint.hidden { display:none; }
+
+.empty-state {
+  text-align:center; padding:70px 20px; color: var(--dim);
+  border: 1.5px dashed rgba(99,102,241,0.2); border-radius:14px; margin-top:10px;
+}
+.empty-state .big { font-size:44px; margin-bottom:12px; }
+.empty-state p { font-size:13px; line-height:1.7; }
+.empty-state .hint { font-size:11px; color: var(--dim); margin-top:8px; }
+
+footer { text-align:center; font-size:10px; color: var(--dim); padding: 10px 20px 26px; }
+
+/* Aturan umum tersembunyi — dipakai panel & tombol dengan class .hidden */
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-title">🔍 <span class="em">OCR Pipeline Preview</span></div>
+  <div class="hd-sub">Tampilkan <b>gambar asli</b> &amp; <b>hasil akhir</b> yang benar-benar dikirim ke Tesseract (crop → skala → preprocessing sesuai pilihan panel di bawah; tahap tengah tetap dihitung, tidak ditampilkan). Klik gambar mana pun untuk zoom 1:1.</div>
+  <div class="hd-actions">
+    <label class="btn">📁 Pilih Gambar…<input type="file" id="fileInput" accept="image/*" hidden></label>
+    <button id="btnReuseCrop" class="btn ghost hidden" title="Pakai kembali area crop manual terakhir pada gambar baru yang berukuran sama">🔁 Terapkan crop terakhir</button>
+    <label class="chk"><input type="checkbox" id="chkOverlay" checked> Tampilkan area crop</label>
+    <span id="cropScaleWarnTop" class="crop-scale-warn-top" style="display:none;"></span>
+  </div>
+</header>
+
+<main>
+  <section id="sizePanel" class="size-panel">
+    <div class="size-title">📐 <span class="em">Ukuran yang Seharusnya di OCR</span></div>
+    <div class="size-sub">Ketik resolusi tangkapan layar → lihat persis apa yang akan dipotong &amp; ukuran akhir yang masuk Tesseract, sehingga bisa Anda sesuaikan. Atau muat gambar (terisi otomatis).</div>
+    <div class="size-controls">
+      <label class="sz-field">Lebar <input id="szW" type="number" min="1" value="1920"></label>
+      <span class="sz-x">×</span>
+      <label class="sz-field">Tinggi <input id="szH" type="number" min="1" value="1080"></label>
+      <div class="sz-presets">
+        <button type="button" data-w="1920" data-h="1080">1920×1080</button>
+        <button type="button" data-w="1500" data-h="2622">1500×2622</button>
+        <button type="button" data-w="1206" data-h="2622">1206×2622</button>
+        <button type="button" data-w="1080" data-h="1920">1080×1920</button>
+        <button type="button" data-w="2560" data-h="1440">2560×1440</button>
+      </div>
+    </div>
+    <div class="sz-result" id="szResult"></div>
+  </section>
+
+  <section id="preprocPanel" class="preproc-panel">
+    <div class="preproc-title">🧪 <span class="em">Preprocessing — Uji Coba</span></div>
+    <div class="preproc-sub">Semua mati secara default (produksi livechat tetap tanpa preprocessing). Nyalakan per tahap untuk menguji gambar <b>kecil / buram</b> — preview menampilkan <b>gambar asli</b> &amp; <b>hasil akhir</b> saja (tahap tengah tetap dihitung, tidak ditampilkan) dan hasil <b>Jalankan OCR</b> ikut berubah. Keterangan dalam kurung = untuk masalah gambar apa tahap itu berguna.</div>
+    <div class="preproc-btns">
+      <button type="button" id="ppUpscale" class="preproc-btn" title="Perbesar teks kecil 2× sebelum filter lain — sering paling efektif untuk teks kecil. Otomatis dilewati jika hasil 2× melebihi 5MP (canvas sumber > 1.25MP)."><span class="pp-name">Upscale 2×</span><span class="pp-tag">(untuk teks kecil)</span></button>
+      <button type="button" id="ppSpecks" class="preproc-btn" title="Buang bintik noise hitam kecil (salt-and-pepper)"><span class="pp-name">Buang Spek</span><span class="pp-tag">(untuk gambar bernoise)</span></button>
+      <button type="button" id="ppMedian" class="preproc-btn" title="Median filter 3×3 — hilangkan noise butiran/grainy"><span class="pp-name">Median</span><span class="pp-tag">(untuk noise butiran)</span></button>
+      <button type="button" id="ppDilate" class="preproc-btn" title="Tebalkan garis — skip otomatis untuk gambar kecil / kontras sudah bagus"><span class="pp-name">Dilasi Adaptif</span><span class="pp-tag">(untuk teks tipis)</span></button>
+      <button type="button" id="ppErode" class="preproc-btn" title="Menipiskan guratan tebal / buang titik noise"><span class="pp-name">Erosi</span><span class="pp-tag">(untuk teks tebal)</span></button>
+      <button type="button" id="ppContrast" class="preproc-btn" title="Perbaiki kontras adaptif (histogram clip)"><span class="pp-name">Kontras</span><span class="pp-tag">(untuk gambar redup)</span></button>
+      <button type="button" id="ppClahe" class="preproc-btn" title="CLAHE — equalisasi histogram kontras-terbatas per blok"><span class="pp-name">CLAHE</span><span class="pp-tag">(untuk gambar buram)</span></button>
+      <button type="button" id="ppGamma" class="preproc-btn" title="Koreksi gamma 1.2 — cerahkan gambar terlalu gelap"><span class="pp-name">Gamma</span><span class="pp-tag">(untuk gambar gelap/terang)</span></button>
+      <button type="button" id="ppOtsu" class="preproc-btn" title="Binarisasi Otsu — ubah jadi hitam-putih dengan ambang otomatis optimal"><span class="pp-name">Binarisasi Otsu</span><span class="pp-tag">(untuk kontras rendah)</span></button>
+      <button type="button" id="ppAdaptive" class="preproc-btn" title="Binarisasi adaptif per blok — tahan cahaya tidak merata"><span class="pp-name">Binarisasi Adaptif</span><span class="pp-tag">(untuk cahaya tidak merata)</span></button>
+      <button type="button" id="ppInvert" class="preproc-btn" title="Balik warna — teks putih di latar gelap jadi hitam"><span class="pp-name">Invert</span><span class="pp-tag">(untuk teks putih di latar gelap)</span></button>
+      <button type="button" id="ppSharpen" class="preproc-btn" title="Pertajam tepi (kernel sharpen 5×1)"><span class="pp-name">Sharpen</span><span class="pp-tag">(untuk teks buram)</span></button>
+      <button type="button" id="ppReset" class="btn ghost">⟲ Matikan Semua</button>
+    </div>
+  </section>
+
+  <div id="empty" class="empty-state">
+    <div class="big">🖼️</div>
+    <p>Pilih screenshot dari disk, <b>tarik &amp; lepas</b> ke jendela ini, atau <b>Ctrl+V</b> gambar dari clipboard.</p>
+    <p class="hint">Atau klik salah satu tombol contoh di atas untuk langsung melihat cara kerja crop — termasuk efek noise pada simbol <b>+</b>.</p>
+  </div>
+
+  <section id="info" class="info-bar hidden"></section>
+
+  <section id="stages" class="stages hidden"></section>
+
+  <!-- Panel OCR SELALU terlihat — tombol "Jalankan OCR" tidak boleh tersembunyi.
+       (Aturan umum .hidden membuat class hidden benar-benar bekerja; sebelumnya
+       panel ini tampil hanya karena tidak ada CSS yang menyembunyikannya.) -->
+  <section id="ocrPanel" class="ocr-panel">
+    <div class="ocr-head">
+      <button id="btnOcr" class="btn">⚡ Jalankan OCR (Tesseract asli)</button>
+      <button id="btnAuto" class="btn ghost" title="Auto Scale: mulai dari setting Perbesaran OCR terakhir Anda (mis. ×1.6) lalu naik terus langkah ×0.1 dengan prep Invert (default) sampai bestcode / '+Ambil' terbaca, setop, dan hasilkan prompt INSTRUKSI OCR pemenang untuk disalin">🤖 Auto Scale</button>
+      <span id="ocrStatus"></span>
+    </div>
+    <div class="ocr-note" id="ocrCropNote">
+      OCR dijalankan pada <b>canvas akhir pipeline</b> (crop → skala → preprocessing sesuai
+      pilihan panel di atas; default semua mati) — sekali, tanpa auto-crop ulang. Hasilnya = yang
+      benar-benar dikirim ke Tesseract. Tombol <b>🤖 Auto Scale</b> mulai dari setting Perbesaran OCR
+      terakhir Anda (mis. ×1.6) lalu <b>naik terus</b> langkah ×0.1 dengan <b>prep Invert</b> (default)
+      sampai <b>bestcode / '+Ambil'</b> terbaca, lalu setop &amp; tampilkan <b>prompt pemenang</b> di bawah untuk Anda salin.
+    </div>
+    <div id="autoResultWrap" class="auto-result-wrap" style="display:none;">
+      <div class="crop-prompt-label" id="autoResultLabel">🏆 Hasil Akhir Pemenang (gambar yang di-OCR) — klik untuk zoom</div>
+      <canvas id="autoResultImg"></canvas>
+    </div>
+    <div id="ocrCodes" class="ocr-codes"></div>
+    <div id="ocrRaw" class="ocr-raw"></div>
+    <div id="autoPromptWrap" class="auto-prompt-wrap" style="display:none;">
+      <div class="crop-prompt-label">📋 Hasil Auto Scale — prompt pemenang (scale terbaik, prep Invert) — salin &amp; kirim ke asisten</div>
+      <textarea id="autoPrompt" readonly spellcheck="false"></textarea>
+      <div class="auto-prompt-actions">
+        <button type="button" class="btn ghost" id="autoCopy">📋 Salin Prompt</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Pipeline preview — aturan crop &amp; pipeline disalin persis dari pipeline produksi agar hasil yang Anda lihat = yang dikirim ke Tesseract.</footer>
+
+<div id="dropHint" class="drop-hint hidden">Lepaskan gambar di sini 🖼️</div>
+<div id="lightbox" class="lightbox hidden">
+  <div class="lb-inner"><canvas id="lbCanvas"></canvas></div>
+  <div class="lb-caption" id="lbCaption"></div>
+</div>
+
+<div id="cropModal" class="crop-modal hidden">
+  <div class="crop-inner">
+    <div class="crop-head">
+      <span class="t">✂️ <span class="em">Atur Area OCR</span> — gambar ukuran asli</span>
+      <span class="d" id="cropImgDim"></span>
+      <button type="button" class="btn ghost x" id="cropClose" title="Tutup">✕</button>
+    </div>
+    <div class="crop-zoom">
+      <span>Perbesar tampilan editor:</span>
+      <button type="button" id="cropZoomOut">−</button>
+      <span id="cropZoomLabel">100%</span>
+      <button type="button" id="cropZoomIn">+</button>
+      <span class="crop-scale-sep">|</span>
+      <span>Perbesaran OCR (zoom maks):</span>
+      <input type="number" id="cropScaleInput" class="crop-scale-in" min="1" max="4" step="0.1" value="1.5"
+        title="Zoom maksimal untuk area crop — dipakai pipeline &amp; engine produksi (disimpan ke chrome.storage)">
+      <span>×</span>
+      <span id="cropScaleWarn" class="crop-scale-warn" style="display:none;"></span>
+    </div>
+    <div class="crop-body" id="cropBody">
+      <canvas id="cropStageCanvas"></canvas>
+    </div>
+    <div class="crop-readout" id="cropReadout"></div>
+    <div class="crop-prompt-wrap">
+      <div class="crop-prompt-label">📋 Prompt hasil crop manual</div>
+      <textarea id="cropPrompt" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="crop-actions">
+      <button type="button" class="btn" id="cropCopy">📋 Salin Prompt</button>
+      <button type="button" class="btn ghost" id="cropCancel">Batal</button>
+      <button type="button" class="btn" id="cropApply">✅ Terapkan Crop ke Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tesseract dimuat STATIS + ocr-preview.js sebagai MODULE (pola SAMA dengan
+     dashboard/popup/offscreen yang terbukti bekerja di extension MV3). Sebelumnya
+     tesseract di-inject via JS dan engine di-import dinamis saat runOcr — pola itu
+     rapuh di halaman extension dan membuat tombol OCR bisa gagal tanpa error jelas. -->
+<script src="../lib/tesseract.min.js"></script>
+<script type="module" src="ocr-preview.js"></script>
+</body>
+</html>

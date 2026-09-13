@@ -1,0 +1,26 @@
+Nama Proyek,Integrasi AUTO RELAX dan AUTO SCATER (Banyak Situs, Satu Alur, Cek Ganda),,,,
+Referensi,Proposal_Integrasi_Relax_Scater.html,,,,,,
+Tanggal,7-Sep-26,,,,,,
+Sistem Sumber 1,AUTO RELAX - AA (penerima klaim, isi form, OCR),,,,
+Sistem Sumber 2,AUTO SCATER (otak cek dan proses, approve reject),,,,,
+,,,,,,,
+Kategori,No,File,Sistem,Tindakan,Jenis Perubahan,Kode Utama Yang Ditambah/Diubah,Keterangan
+Konfigurasi,1,lib/constants.js,AUTO SCATER,Tambah daftar situs yang dilayani,Tambah konstanta,"const TARGET_SITES = [{ name:'bandar', host:'bandar.idrbo1.com' }, ...]",Daftar situs satu tempat untuk kedua sisi
+Konfigurasi,2,config.js,AUTO RELAX,Tambah daftar situs untuk menu pilih,Tambah konstanta,const LIST_TOKO = TARGET_SITES.map(t => t.name),Pilihan situs saat klaim masuk
+Penerimaan,3,pages/dashboard.js,AUTO RELAX,Klaim yang disimpan membawa kolom site,Tambah field,"const baris = { userId, kodeTiket, betting, scatter, site: pilihanSitus }","Sebelum tersimpan, asal situs sudah diketahui"
+Jembatan,4,modules/bg-messages.js,AUTO RELAX,Kirim klaim berlabel ke otak proses,Tambah handler,"client msg { action:'KLAIM_BARU', klaim:{ ..., site } }",Jembatan RELAX menuju SCATER
+Antrian,5,background.js,AUTO SCATER,Slot antrian per situs yang terbentuk otomatis,Refactor struktur,const siteSlots = {}; function slotOf(host),Klaim masuk ke wadah antrian situsnya sendiri
+Antrian,6,background.js,AUTO SCATER,Proses KLAIM_BARU,Refactor handler,slot = slotOf(msg.klaim.site),Worker hanya mengambil dari antrian situsnya
+Token,7,lib/token.js,AUTO SCATER,Token disimpan per hostname,Refactor saveToken,"saveToken(host, tk) -> siteData[host].token",Sesi tiap situs tidak saling menimpa
+Token,8,background.js,AUTO SCATER,Sniffer mencatat asal token,Refactor setupHeaderSniffer,"const host = new URL(details.url).hostname; saveToken(host, tk)",Token latoto tidak dipakai untuk bandar
+Sesi,9,modules/bg-secure.js,AUTO RELAX,Isi form memakai sesi situs yang tepat,Refactor automateForm,"const sesi = sesiSitus[klaim.site]; extractForm(sesi, {...})",Form submit di situs besutan klaim
+Cek ganda,10,modules/bg-secure.js / background.js,Kedua sistem,Cek nominal taruhan sebelum approve,Tambah validasi,betSesuai = (klaim.betting === rincianTaruhan.totalBet); if (!betSesuai) reject,Lapis pertama keamanan
+Cek ganda,11,modules/bg-secure.js / background.js,Kedua sistem,Cek scatter cocok dengan bukti,Tambah validasi,"scatterSah = [3,4,5].includes(input); cocok = (input === bukti)",Lapis kedua keamanan
+Cek ganda,12,modules/bg-secure.js / background.js,Kedua sistem,Verifikasi ulang sebelum eksekusi approve,Tambah validasi,Samaankan ulang catatan sebelum approve,Mencegah keputusan karena data berubah
+Antrian kunci,13,background.js,AUTO SCATER,Kunci anti duplikat menyertakan hostname,Refactor key,const kunci = site + '|' + userId + '|' + kodeTiket,Tiket sama di situs beda tetap dianggap beda
+Dashboard,14,app.js / pages/dashboard.js,Kedua sistem,Filter tampilan per situs,Tambah fitur,const pilih = searchParams.get('site'); allRows.filter(r => r.site === pilih),Tampil per situs atau gabungan
+Dashboard,15,app.html / dashboard.html,Kedua sistem,Area daftar situs dan ringkasan,UI,Elemen daftar situs di atas tabel klaim,Bos melihat jumlah klaim per situs
+Manifest,16,manifest.json,Kedua sistem,Umumnya tidak perlu diubah,Biarkan,Pola alamat wildcard sudah mencakup semua domain,Situs baru tidak butuh ubah manifest
+Pengujian,17,Uji rute,Verifikasi jalur tidak tertukar,Verifikasi,"Klaim latoto dan bandar secara bersamaan, cek antrian masing-masing",Tidak ada klaim lintas situs,
+Pengujian,18,Uji cek ganda,Verifikasi nominal dan scatter,Verifikasi,Kirim klaim dengan nominal salah dan scatter salah,Keduanya ditolak dengan alasan jelas,
+Pengujian,19,Sandbox gabungan,Bandingkan hasil sebelum dan sesudah,Verifikasi,Proses situs yang sama di sistem lama dan baru,Hasil keduanya sama untuk klaim yang sama,

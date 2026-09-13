@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUTO RELAX AA - Buku Mimpi</title>
+<style>
+:root {
+  --primary: #818cf8;
+  --primary-light: #a5b4fc;
+  --primary-dark: #6366f1;
+  --bg-dark: #0a0d16;
+  --bg-card: #111827;
+  --bg-elevated: #1a1f2e;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-subtle: rgba(148,163,184,0.08);
+  --border-accent: rgba(129,140,248,0.2);
+  --transition: all 0.2s ease;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px; }
+
+/* Header */
+.header {
+  background: rgba(12,15,28,0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 12px rgba(0,0,0,0.15);
+}
+@keyframes rgbBolt {
+  0%, 100% { color: #60a5fa; text-shadow: 0 0 4px rgba(96,165,250,0.3), 0 0 12px rgba(96,165,250,0.15); }
+  16%     { color: #a5b4fc; text-shadow: 0 0 6px rgba(165,180,252,0.4), 0 0 18px rgba(165,180,252,0.2); }
+  33%     { color: #38bdf8; text-shadow: 0 0 5px rgba(56,189,248,0.35), 0 0 16px rgba(56,189,248,0.2), 0 0 30px rgba(56,189,248,0.08); }
+  50%     { color: #60a5fa; text-shadow: 0 0 4px rgba(96,165,250,0.3), 0 0 12px rgba(96,165,250,0.15); }
+  66%     { color: var(--primary); text-shadow: 0 0 6px rgba(129,140,248,0.4), 0 0 20px rgba(129,140,248,0.15); }
+  83%     { color: #7dd3fc; text-shadow: 0 0 5px rgba(125,211,252,0.35), 0 0 14px rgba(125,211,252,0.2); }
+}
+.header h1 {
+  font-family: 'Comfortaa', 'Segoe UI', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  animation: rgbBolt 3s ease-in-out infinite;
+}
+.header .subtitle { font-size: 11px; color: var(--text-muted); }
+.header .nav-links { margin-left: auto; display: flex; gap: 12px; }
+.header .nav-links a {
+  color: var(--text-muted); font-size: 12px; text-decoration: none;
+  padding: 4px 10px; border-radius: 6px; transition: var(--transition);
+  border: 1px solid transparent;
+}
+.header .nav-links a:hover { color: var(--primary); border-color: var(--border-accent); background: rgba(129,140,248,0.06); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 28px;
+  background: rgba(12,15,28,0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 60px;
+  z-index: 199;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: var(--transition);
+  letter-spacing: .3px;
+}
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+  transition: var(--transition);
+}
+.tab-btn:hover { color: var(--text); background: rgba(129,140,248,0.04); }
+.tab-btn.active { color: var(--primary); }
+.tab-btn.active::after { width: 60%; }
+
+/* Content */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* Card */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* Search */
+.search-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.search-wrap input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+}
+.search-wrap input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(129,140,248,0.1); }
+.search-wrap input::placeholder { color: var(--text-muted); }
+.search-wrap select {
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+.search-wrap select:focus { border-color: var(--primary); }
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+table.mimpi {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.mimpi th {
+  background: rgba(129,140,248,0.08);
+  color: var(--primary-light);
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  position: sticky;
+  top: 0;
+}
+table.mimpi td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+table.mimpi tr:hover td { background: rgba(129,140,248,0.03); }
+table.mimpi .gambar { font-size: 24px; text-align: center; }
+table.mimpi .angka {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+}
+table.mimpi .arti { color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.pagination button {
+  padding: 6px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.pagination button:hover { border-color: var(--primary); color: var(--primary); }
+.pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.pagination button:disabled { opacity: .4; cursor: default; }
+.pagination .info { font-size: 12px; color: var(--text-muted); padding: 0 8px; }
+
+/* Memo Badge */
+.memo-badge {
+  display: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 4px;
+  vertical-align: super;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg class="logo-svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <rect width="32" height="32" rx="8" fill="url(#lg)" />
+    <path d="M16 6L18 12L24 12.5L19.5 16.5L21 23L16 19.5L11 23L12.5 16.5L8 12.5L14 12L16 6Z" fill="#fff" opacity=".9"/>
+    <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#818cf8"/></linearGradient></defs>
+  </svg>
+  <div>
+    <h1>AUTO RELAX AA</h1>
+    <div class="subtitle">Buku Mimpi Togel Lengkap</div>
+  </div>
+  <div class="nav-links">
+    <a href="dashboard.html">Dashboard</a>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn" data-tab="data"> Data</button>
+  <button class="tab-btn" data-tab="logs"> Logs</button>
+  <button class="tab-btn" data-tab="panduan"> Panduan</button>
+  <button class="tab-btn active" data-tab="mimpi"> Buku Mimpi</button>
+  <button class="tab-btn" data-tab="prediksi"> Prediksi</button>
+  <button class="tab-btn" data-tab="parlay"> Parlay</button>
+  <button class="tab-btn" data-tab="hadiah"> Hadiah</button>
+  <button class="tab-btn" data-tab="jadwal"> Jadwal</button>
+  <button class="tab-btn" data-tab="ai"> AI Chat</button>
+  <button class="tab-btn" data-tab="typing"> Typing Test</button>
+  <button class="tab-btn" data-tab="memo"> Memo<span id="memo-badge" class="memo-badge"></span></button>
+</div>
+
+<div class="content">
+
+  <!-- Data -->
+  <div class="tab-pane" id="pane-data">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Data Master</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Gunakan halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a> untuk melihat dan mengelola data pasaran.</p>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  <div class="tab-pane" id="pane-logs">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Log Aktivitas</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Lihat log aktivitas di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Panduan -->
+  <div class="tab-pane" id="pane-panduan">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Panduan</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Baca panduan lengkap di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Buku Mimpi -->
+  <div class="tab-pane active" id="pane-mimpi">
+    <div class="card">
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Cari judul mimpi, angka, atau arti...">
+        <select id="filter-angka">
+          <option value="">Semua Angka</option>
+          <option value="0000-0999">0000 - 0999</option>
+          <option value="1000-1999">1000 - 1999</option>
+          <option value="2000-2999">2000 - 2999</option>
+          <option value="3000-3999">3000 - 3999</option>
+          <option value="4000-4999">4000 - 4999</option>
+          <option value="5000-5999">5000 - 5999</option>
+          <option value="6000-6999">6000 - 6999</option>
+          <option value="7000-7999">7000 - 7999</option>
+          <option value="8000-8999">8000 - 8999</option>
+          <option value="9000-9999">9000 - 9999</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="mimpi" id="mimpi-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">No</th>
+              <th>Judul</th>
+              <th style="width:90px;">Angka</th>
+              <th>Arti</th>
+            </tr>
+          </thead>
+          <tbody id="mimpi-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- Prediksi -->
+  <div class="tab-pane" id="pane-prediksi">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Prediksi</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Lihat prediksi di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Parlay -->
+  <div class="tab-pane" id="pane-parlay">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Parlay</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Gunakan kalkulator parlay di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Hadiah -->
+  <div class="tab-pane" id="pane-hadiah">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Hadiah</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Lihat tabel hadiah di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Jadwal -->
+  <div class="tab-pane" id="pane-jadwal">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Jadwal</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Lihat jadwal pasaran di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- AI Chat -->
+  <div class="tab-pane" id="pane-ai">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">AI Chat</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Buka AI Chat di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Typing Test -->
+  <div class="tab-pane" id="pane-typing">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Typing Test</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Gunakan typing test di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+  <!-- Memo -->
+  <div class="tab-pane" id="pane-memo">
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--primary-light);">Memo</h3>
+      <p style="color:var(--text-muted);font-size:13px;">Buka memo di halaman <a href="dashboard.html" style="color:var(--primary);">Dashboard</a>.</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="mimpi.js"></script>
+</body>
+</html>

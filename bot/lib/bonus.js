@@ -307,13 +307,8 @@ async function scatterForTicket(cfg, site, admin, userId, screenId, gameId) {
       body: `sid=${encodeURIComponent(screenId)}&gid=${encodeURIComponent(gameId)}`
     });
     if (!r.ok) throw new Error('Gagal akses JSON history: ' + r.status);
-    const ct = (r.headers.get('content-type') || '').toLowerCase();
-    if (ct.includes('json')) {
-      let j = null;
-      try { j = await r.clone().json(); } catch (e) {}
-      if (j && invalidSessionMsg(j)) throw new Error('INVALID_OPERATOR_SESSION: ' + invalidSessionText(j));
-    }
     const d = await r.json();
+    if (invalidSessionMsg(d)) throw new Error('INVALID_OPERATOR_SESSION: ' + invalidSessionText(d));
     const raw = simpleExtractScatter(d);
     if (raw < 3 || raw > 5) {
       const alt = scatterFallbackExtract(d);

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usulan Integrasi Sistem AUTO RELAX dan AUTO SCATER</title>
+<style>
+  :root{
+    --ink:#0b1023;
+    --ink2:#111a35;
+    --paper:#ffffff;
+    --cyan:#22d3ee;
+    --violet:#8b5cf6;
+    --amber:#fbbf24;
+    --rose:#fb7185;
+    --green:#34d399;
+    --text:#2b3553;
+    --muted:#7c88a8;
+    --line:#e6ebf5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:#dde3ee;
+    color:var(--text);
+    line-height:1.6;
+    font-size:14px;
+  }
+  .page{
+    width:210mm;min-height:297mm;
+    margin:18px auto;background:var(--paper);
+    padding:20mm 18mm;
+    box-shadow:0 12px 40px rgba(11,16,35,.18);
+    border-radius:6px;
+    page-break-after:always;
+    position:relative;overflow:hidden;
+  }
+  @media print{
+    body{background:#fff;}
+    .page{box-shadow:none;margin:0;width:100%;border-radius:0;}
+  }
+  .brand{position:absolute;top:0;left:0;right:0;height:7px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--amber));}
+  .foot{position:absolute;bottom:12mm;left:18mm;right:18mm;display:flex;justify-content:space-between;color:var(--muted);font-size:10.5px;border-top:1px dashed var(--line);padding-top:7px;}
+  h1{font-size:29px;line-height:1.15;color:var(--ink);}
+  h2{font-size:21px;color:var(--ink);margin:14px 0 8px;}
+  h3{font-size:15px;color:var(--ink2);margin:13px 0 5px;}
+  p{margin:6px 0;text-align:justify;}
+  .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:12px;color:#fff;}
+  .kicker.c1{background:linear-gradient(90deg,var(--cyan),#0ea5e9);}
+  .kicker.c2{background:linear-gradient(90deg,var(--violet),#7c3aed);}
+  .kicker.c3{background:linear-gradient(90deg,var(--amber),#f59e0b);}
+  .kicker.c4{background:linear-gradient(90deg,var(--rose),#e11d48);}
+  .kicker.c5{background:linear-gradient(90deg,var(--green),#10b981);}
+
+  /* SAMPUL */
+  .cover{background:radial-gradient(1200px 600px at 85% -10%,#1c2a55 0%,var(--ink) 55%);color:#eef2ff;padding:24mm 20mm;}
+  .cover .brand{background:linear-gradient(90deg,var(--cyan),var(--violet),var(--amber),var(--rose));}
+  .cover h1{color:#fff;}
+  .cover .sub{color:#b8c4e8;font-size:15.5px;margin-top:10px;}
+  .cover .meta{color:#7f8db8;font-size:12.5px;}
+  .cover .big-nums{display:flex;gap:12px;margin:26px 0;}
+  .cover .num{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:14px 12px;text-align:center;}
+  .cover .num b{display:block;font-size:24px;color:#fff;font-weight:800;}
+  .cover .num span{font-size:11px;color:#b8c4e8;}
+  .cover .tagline{
+    margin-top:24px;padding:18px 20px;border-radius:14px;
+    background:linear-gradient(120deg,rgba(34,211,238,.16),rgba(139,92,246,.16));
+    border:1px solid rgba(255,255,255,.18);
+    font-size:14px;color:#eef2ff;
+  }
+
+  /* KARTU */
+  .duo{display:flex;gap:14px;margin:12px 0;}
+  .duo>div{flex:1;}
+  .card{border-radius:14px;padding:15px 17px;background:#fff;border:1px solid var(--line);box-shadow:0 3px 12px rgba(11,16,35,.05);}
+  .card h3{margin-top:0;font-size:15px;}
+  .card ul,ol{margin:8px 0 0 20px;}
+  .card li{margin:5px 0;}
+  .card.c-cyan{border-top:4px solid var(--cyan);}
+  .card.c-violet{border-top:4px solid var(--violet);}
+  .card.c-amber{border-top:4px solid var(--amber);}
+  .card.c-rose{border-top:4px solid var(--rose);}
+  .card.c-green{border-top:4px solid var(--green);}
+  .note{border-radius:12px;padding:13px 16px;font-size:13.5px;margin:10px 0;}
+  .note.tight{margin:4px 0;}
+  .note acyan{background:#e6fbff;border:1px solid #b7f0fb;color:#0c5460;}
+  .note aamber{background:#fff8e6;border:1px solid #ffe2a8;color:#8a5a00;}
+  .note arose{background:#ffeef1;border:1px solid #ffc8d1;color:#9a1c2f;}
+  .note agreen{background:#e7fcf2;border:1px solid #b9f3da;color:#0c5f3d;}
+  .note bblue{background:#eef2ff;border:1px solid #cfd9ff;color:#24307a;}
+
+  /* TIMELINE */
+  .tl{position:relative;margin:16px 0 6px;padding-left:30px;}
+  .tl:before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:3px;background:linear-gradient(180deg,var(--cyan),var(--violet),var(--amber),var(--green));border-radius:3px;}
+  .tl .step{position:relative;padding:9px 0 13px 8px;}
+  .tl .step:before{content:"";position:absolute;left:-27px;top:14px;width:15px;height:15px;border-radius:50%;background:#fff;border:4px solid var(--violet);}
+  .tl .step:nth-child(1):before{border-color:var(--cyan);}
+  .tl .step:nth-child(2):before{border-color:#38bdf8;}
+  .tl .step:nth-child(3):before{border-color:var(--violet);}
+  .tl .step:nth-child(4):before{border-color:var(--amber);}
+  .tl .step:nth-child(5):before{border-color:var(--rose);}
+  .tl .step:nth-child(6):before{border-color:var(--green);}
+  .tl .step:nth-child(7):before{border-color:#34d399;}
+  .tl b{color:var(--ink);}
+  .tl .where{font-family:"Consolas",monospace;font-size:11px;color:var(--muted);}
+
+  /* PERISAI */
+  .shields{display:flex;gap:14px;margin:14px 0;}
+  .shield{flex:1;border-radius:16px;padding:16px;text-align:center;color:#eef2ff;}
+  .shield .ic{font-size:28px;display:block;margin-bottom:6px;}
+  .shield b{display:block;font-size:16px;}
+  .shield span{font-size:12px;color:#c9d3ef;display:block;margin-top:4px;}
+  .shield.one{background:linear-gradient(160deg,#0b2a5e,#10334a);}
+  .shield.two{background:linear-gradient(160deg,#3b0f4d,#2a1b55);}
+  .shield.three{background:linear-gradient(160deg,#0b3a2a,#14532d);}
+
+  /* PIPA */
+  .pipe{display:flex;align-items:stretch;gap:8px;margin:16px 0;flex-wrap:nowrap;}
+  .pipe .box{flex:1;border-radius:10px;padding:10px 8px;text-align:center;font-size:11.5px;color:#fff;}
+  .pipe .box b{display:block;font-size:13px;margin-bottom:3px;}
+  .pipe .arr{align-self:center;color:var(--muted);font-weight:900;font-size:14px;}
+  .pipe .p1{background:linear-gradient(180deg,#0ea5e9,var(--cyan));}
+  .pipe .p2{background:linear-gradient(180deg,#6366f1,var(--violet));}
+  .pipe .p3{background:linear-gradient(180deg,#f59e0b,var(--amber));}
+  .pipe .p4{background:linear-gradient(180deg,#e11d48,var(--rose));}
+  .pipe .p5{background:linear-gradient(180deg,#10b981,var(--green));}
+
+  /* KODE */
+  pre{
+    background:#0a0f1f;color:#dbe4ff;border-radius:12px;padding:13px 15px;
+    font-family:"Consolas","Courier New",monospace;font-size:11.5px;line-height:1.5;
+    white-space:pre-wrap;word-break:break-word;margin:9px 0;position:relative;
+    border:1px solid #1d2a4d;
+  }
+  pre .tagfile{position:absolute;top:-9px;left:12px;font-family:"Segoe UI",sans-serif;font-size:10px;font-weight:700;padding:2px 9px;border-radius:6px;color:#fff;letter-spacing:.04em;}
+  pre .f1{background:var(--violet);}
+  pre .f2{background:#0ea5e9;}
+  pre .f3{background:var(--amber);}
+  pre .k{color:#7dd3fc;}
+  pre .s{color:#a7f3d0;}
+  pre .c{color:#7c88a8;font-style:italic;}
+  pre .site{color:#fcd34d;font-weight:700;}
+
+  /* TABEL */
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px;border-radius:10px;overflow:hidden;}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--ink);color:#fff;font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:#f7f9ff;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;}
+  .tag.b{background:#e0effe;color:#0369a1;}
+  .tag.v{background:#ede9fe;color:#6d28d9;}
+  .tag.g{background:#d1fae5;color:#047857;}
+  .tag.r{background:#ffe4e6;color:#be123c;}
+  .tag.a{background:#fef3c7;color:#b45309;}
+  .subNote{color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+
+<!-- ====== SAMPUL ====== -->
+<div class="page cover">
+  <div class="brand"></div>
+  <span class="kicker c3">Usulan Pengembangan Sistem</span>
+  <h1>Integrasi Layani Klaim<br>Multi-Situs dalam<br>Satu Alur Kerja</h1>
+  <p class="sub">Menyatukan sistem penerimaan klaim (AUTO RELAX) dan sistem verifikasi (AUTO SCATER) menjadi satu alur layanan yang terarah, dari menerima kode tiket sampai keputusan akhir diberikan.</p>
+  <p class="meta">Lingkup layanan: situs idrbo, idrbo1, idrbo3, idrbo4 dengan lebih dari 60 situs. Satu dashboard, verifikasi berlapis, dan pemisahan data per situs.</p>
+
+  <div class="big-nums">
+    <div class="num"><b>60+</b><span>situs yang ditangani<br>dalam satu sistem</span></div>
+    <div class="num"><b>2</b><span>lapis verifikasi:<br>nominal dan scatter</span></div>
+    <div class="num"><b>1</b><span>dashboard<br>untuk semua situs</span></div>
+    <div class="num"><b>0</b><span>risiko klaim<br>masuk situs keliru</span></div>
+  </div>
+
+  <div class="tagline">Keamanan sistem ini bertumpu pada satu prinsip: setiap klaim membawa penanda asal situs sejak diterima, dan seluruh proses verifikasi hanya dikerjakan pada situs sesuai penanda tersebut. Aturan sederhana yang membuat skala situs tidak lagi menjadi beban.</div>
+</div>
+
+<!-- ====== 1. KONDISI SAAT INI ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c1">Kondisi saat ini</span>
+  <h2>Dua sistem yang sudah berjalan</h2>
+
+  <div class="duo">
+    <div class="card c-cyan">
+      <h3>AUTO RELAX</h3>
+      <p class="subNote">Menangani sisi penerimaan dan pengisian.</p>
+      <ul>
+        <li>Menerima user id dan kode tiket melalui isian form atau hasil pembacaan gambar (OCR).</li>
+        <li>Mengisi formulir klaim di bonussmb.com/tickets secara otomatis.</li>
+        <li>Mengecek status antrean di bonussmb.com/history.</li>
+        <li>Menarik rincian taruhan dari halaman transaksi situs admin.</li>
+      </ul>
+    </div>
+    <div class="card c-violet">
+      <h3>AUTO SCATER</h3>
+      <p class="subNote">Menangani sisi pemeriksaan dan keputusan.</p>
+      <ul>
+        <li>Menangkap sesi token dari situs idrbo yang sedang aktif.</li>
+        <li>Memantau antrean tiket dan memeriksa kecocokan scatter.</li>
+        <li>Menjalankan antrean pekerja hingga keputusan approve atau reject.</li>
+        <li>Menampilkan hasil melalui dashboard extension.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Peluang penyatuan</h3>
+  <p>Kedua sistem bekerja pada dua sisi atas alamat yang sama: bonussmb.com untuk klaim dan situs idrbo untuk rincian taruhan. Saat ini sisi penerimaan belum menyampaikan asal situs kepada sisi verifikasi, sehingga keduanya belum bekerja dalam satu alur yang utuh. Menghubungkan keduanya menjadi arah pengembangan yang tidak memerlukan penggantian sistem, melainkan penyambungan alur.</p>
+
+  <div class="note arose tight">Kebutuhan utama: setiap klaim yang diterima perlu mengetahui asal situsnya, lalu diteruskan ke sisi verifikasi beserta penanda itu, agar seluruh proses berjalan pada situs yang tepat.</div>
+</div>
+
+<!-- ====== 2. TANTANGAN ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c1">Latar belakang</span>
+  <h2>Tantangan layanan multi-situs</h2>
+
+  <div class="card c-amber">
+    <ol>
+      <li>Layanan berjalan pada beberapa platform idrbo (idrbo, idrbo1, idrbo3, idrbo4), dan di dalamnya terdapat lebih dari 60 situs yang masing-masing memiliki nama, sesi login, serta antrean tersendiri.</li>
+      <li>Setiap situs memiliki halaman ticket dan sesi yang tidak dapat dipertukarkan. Token milik satu situs tidak berlaku pada situs lain.</li>
+      <li>Klaim yang masuk harus langsung diketahui asal situsnya supaya verifikasi dikerjakan pada situs yang benar, tanpa menunggu proses dikerjakan secara manual.</li>
+      <li>Setiap klaim memerlukan pemeriksaan ganda sebelum disetujui, yaitu kesesuaian nominal taruhan dan kesesuaian jumlah scatter.</li>
+      <li>Hasil akhir perlu tampil terstruktur, dapat dilihat per situs maupun gabungan, dengan riwayat yang jelas siapa mengerjakan apa kapan.</li>
+    </ol>
+  </div>
+
+  <h3>Pendekatan yang dipilih</h3>
+  <p>Pengembangan dilakukan dengan menghubungkan dua sistem yang ada, bukan membangun dari nol. Penerimaan klaim tetap menjadi tanggung jawab sistem yang sudah terbukti (AUTO RELAX), begitu juga pemeriksaan dan keputusan (AUTO SCATER). Titik yang ditambahkan adalah penanda asal situs yang menghubungkan keduanya, serta lapisan verifikasi ganda sebelum keputusan akhir.</p>
+
+  <div class="pipe">
+    <div class="box p1"><b>Terima</b>user id + kode</div>
+    <div class="arr">&#10132;</div>
+    <div class="box p2"><b>Tandai</b>asal situs</div>
+    <div class="arr">&#10132;</div>
+    <div class="box p3"><b>Antrekan</b>sesuai situs</div>
+    <div class="arr">&#10132;</div>
+    <div class="box p4"><b>Verifikasi</b>nominal + scatter</div>
+    <div class="arr">&#10132;</div>
+    <div class="box p5"><b>Putuskan</b>dan tampilkan</div>
+  </div>
+</div>
+
+<!-- ====== 3. ALUR ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c2">Alur terpadu</span>
+  <h2>Perjalanan satu klaim setelah integrasi</h2>
+
+  <div class="tl">
+    <div class="step">
+      <b>1. Klaim diterima</b> <span class="where">dashboard klaimyuk</span><br>
+      User id dan kode tiket masuk melalui isian form atau hasil pembacaan gambar. Tidak ada klaim yang diproses sebelum benar-benar diterima di titik ini.
+    </div>
+    <div class="step">
+      <b>2. Asal situs ditetapkan</b> <span class="where">saat data tersimpan</span><br>
+      Pencatatan dilakukan bersamaan dengan penanda asal situs, sehingga arah proses sudah ditentukan sejak awal dan tidak bergantung pada tebakan di tahap berikutnya.
+    </div>
+    <div class="step">
+      <b>3. Klaim masuk antrean situs yang sama</b> <span class="where">modul verifikasi</span><br>
+      Penanda asal situs digunakan untuk menempatkan klaim pada antrean milik situs tersebut. Antrean antarsitus tidak dibuka oleh proses yang sama.
+    </div>
+    <div class="step">
+      <b>4. Formulir diisi pada situs yang benar</b> <span class="where">sesi situs asal</span><br>
+      Pengisian formulir menggunakan sesi login situs asal klaim, mencakup situs, tipe, user id, kode tiket, nominal, dan scatter.
+    </div>
+    <div class="step">
+      <b>5. Verifikasi ganda</b> <span class="where">sebelum keputusan</span><br>
+      Keselarasan nominal taruhan dan kesesuaian jumlah scatter diperiksa terhadap rincian yang tercatat. Keduanya harus lulus.
+    </div>
+    <div class="step">
+      <b>6. Keputusan diterbitkan</b> <span class="where">approve / reject</span><br>
+      Klaim yang memenuhi seluruh pemeriksaan disetujui. Klaim yang tidak memenuhi ditolak dengan catatan alasan.
+    </div>
+    <div class="step">
+      <b>7. Hasil tampil pada dashboard</b> <span class="where">klaimyuk</span><br>
+      Status akhir tercatat bersama penanda situs, dapat dilihat per situs maupun gabungan, dan menjadi dasar pelaporan.</div>
+  </div>
+</div>
+
+<!-- ====== 4. PEMISAHAN & DASHBOARD ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c5">Pemisahan data</span>
+  <h2>Penanganan banyak situs dalam satu dashboard</h2>
+  <p>Seluruh situs ditangani oleh satu dashboard. Pemisahan dilakukan pada lapisan data, bukan dengan membuat banyak halaman. Pendekatan ini menjaga beban pemeliharaan tetap kecil dan seluruh proses bekerja dengan data yang sama.</p>
+
+  <div class="duo">
+    <div class="card c-cyan">
+      <h3>1. Penanda asal</h3>
+      <p class="subNote">Setiap klaim membawa kolom site sejak diterima. Dokumen belum diproses sebelum penanda ini terisi.</p>
+    </div>
+    <div class="card c-cyan">
+      <h3>2. Sesi per situs</h3>
+      <p class="subNote">Token login dikelompokkan per hostname. Sesi latoto tidak dapat digunakan pada halaman bandar.</p>
+    </div>
+  </div>
+  <div class="duo">
+    <div class="card c-violet">
+      <h3>3. Antrean per situs</h3>
+      <p class="subNote">Klaim ditempatkan pada antrean situsnya sendiri. Pekerja hanya mengambil dari wadah yang sama.</p>
+    </div>
+    <div class="card c-violet">
+      <h3>4. Identitas dari tab aktif</h3>
+      <p class="subNote">Pengerjaan mengikuti situs yang sedang aktif di browser. Asal identitas berasal dari alamat tab, tanpa perlu menebak.</p>
+    </div>
+  </div>
+  <div class="duo">
+    <div class="card c-amber">
+      <h3>5. Kunci anti duplikat</h3>
+      <p class="subNote">Identitas unik memadukan situs, user id, dan kode tiket. Tiket yang sama pada situs berbeda tetap dianggap terpisah.</p>
+    </div>
+    <div class="card c-rose">
+      <h3>6. Slot terbentuk otomatis</h3>
+      <p class="subNote">Situs baru tidak memerlukan pendaftaran manual. Hostname yang pertama kali terlihat langsung membentuk wadahnya sendiri.</p>
+    </div>
+  </div>
+
+  <h3>Contoh penerapan penanda pada data</h3>
+  <pre><span class="k">klaim</span> = {
+  userId:    <span class="s">"12345"</span>,
+  kodeTiket: <span class="s">"ABC1234567890123"</span>,
+  betting:   <span class="s">"50000"</span>,
+  scatter:   <span class="s">4</span>,
+  <span class="site">site: "latoto.idrbo4.com"</span>    <span class="c">penentu jalur</span>
+};
+
+<span class="k">slot = slotOf(klaim.site)</span>;
+<span class="k">kunciUnik = klaim.site + '|' + klaim.userId + '|' + klaim.kodeTiket</span>;</pre>
+
+  <h3>Tampilan dashboard</h3>
+  <pre><span class="k">klaimyuk.com</span>                                    <span class="c">semua situs</span>
+<span class="k">klaimyuk.com/?site=latoto.idrbo4.com</span>          <span class="c">per situs</span>
+<span class="k">klaimyuk.com/?site=bandar.idrbo1.com</span>          <span class="c">per situs</span></pre>
+</div>
+
+<!-- ====== 5. VERIFIKASI GANDA ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c4">Keamanan</span>
+  <h2>Verifikasi ganda sebelum keputusan</h2>
+
+  <div class="shields">
+    <div class="shield one"><span class="ic">&#9881;</span><b>Lapis 1</b><span>Nominal taruhan disamakan dengan catatan pada situs situs.</span></div>
+    <div class="shield two"><span class="ic">&#10032;</span><b>Lapis 2</b><span>Jumlah scatter disamakan dengan bukti yang tersedia. Nilai sah hanya 3, 4, atau 5.</span></div>
+    <div class="shield three"><span class="ic">&#10003;</span><b>Lapis 3</b><span>Sebelum approve, catatan dibuka kembali dan disamakan sekali lagi.</span></div>
+  </div>
+
+  <h3>Lapis 1 : kesesuaian nominal</h3>
+  <pre><span class="tagfile f2">cek nominal</span>
+<span class="k">nominalInput = klaim.betting</span>;              <span class="c">dari input user</span>
+<span class="k">nominalCatat = rincianTaruhan.totalBet</span>;     <span class="c">dari situs situs</span>
+<span class="k">if (nominalInput != nominalCatat) reject</span>(<span class="s">'Nominal tidak sesuai'</span>);</pre>
+
+  <h3>Lapis 2 dan 3 : kesesuaian scatter dan pemeriksaan akhir</h3>
+  <pre><span class="tagfile f2">cek scatter + akhir</span>
+<span class="k">scatterSah = [3, 4, 5]</span>.includes(klaim.scatter);
+<span class="k">if (!scatterSah) reject</span>(<span class="s">'Scatter tidak valid'</span>);
+<span class="k">else if (klaim.scatter != buktiPermainan) reject</span>(<span class="s">'Scatter tidak sesuai bukti'</span>);
+
+<span class="c">Pemeriksaan akhir sebelum approve</span>
+<span class="k">verifikasiAkhir = (nominalCocok && scatterCocok)</span>;</pre>
+
+  <div class="note aamber tight">Nominal harus cocok, scatter harus cocok, dan dilakukan pengecekan ulang sebelum keputusan disetujui. Jika salah satu tidak terpenuhi, klaim ditolak disertai alasan yang tercatat.</div>
+</div>
+
+<!-- ====== 6. PERUBAHAN ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c2">Cakupan teknis</span>
+  <h2>Titik perubahan pada sistem</h2>
+  <p class="subNote">Rangkaian berikut menunjukkan lokasi penyambungan. Perubahan disusun dari dua sistem yang sudah berjalan tanpa mengganti fungsi utamanya.</p>
+
+  <pre><span class="tagfile f1">lib/constants.js  AUTO SCATER</span>
+<span class="c">Daftar situs yang dilayani</span>
+<span class="k">const TARGET_SITES</span> = [
+  { name: <span class="s">'bandar'</span>,  host: <span class="s">'bandar.idrbo1.com'</span> },
+  { name: <span class="s">'latoto'</span>,  host: <span class="s">'latoto.idrbo4.com'</span> },
+  { name: <span class="s">'wdboss'</span>,  host: <span class="s">'wdboss.idrbo.com'</span> }
+];</pre>
+
+  <pre><span class="tagfile f1">pages/dashboard.js  AUTO RELAX</span>
+<span class="c">Penyimpanan klaim beserta asal situs</span>
+<span class="k">const baris</span> = { userId, kodeTiket, betting, scatter, <span class="site">site: pilihanSitus</span> };</pre>
+
+  <pre><span class="tagfile f2">modules/bg-messages.js  AUTO RELAX</span>
+<span class="c">Penerusan klaim berlabel ke modul verifikasi</span>
+chrome.runtime.sendMessage({
+  action: <span class="s">'KLAIM_BARU'</span>,
+  klaim: { userId, kodeTiket, betting, scatter, <span class="site">site</span> }
+});</pre>
+
+  <pre><span class="tagfile f3">background.js  AUTO SCATER</span>
+<span class="c">Antrean per situs, terbentuk otomatis</span>
+<span class="k">const siteSlots</span> = {};
+<span class="k">function slotOf(host)</span> {
+  <span class="k">return</span> (siteSlots[host] = siteSlots[host] || { retryQueue: <span class="k">new Map()</span>, tabId: <span class="k">null</span> });
+}
+chrome.runtime.onMessage.addListener(<span class="k">(msg) =></span> {
+  <span class="k">if</span> (msg.action === <span class="s">'KLAIM_BARU'</span>) {
+    <span class="k">const slot = slotOf(msg.klaim.site)</span>;
+    slot.retryQueue.set(kunciUnik(msg.klaim), msg.klaim);
+    <span class="k">prosesSlot(slot, msg.klaim.site)</span>;
+  }
+});</pre>
+
+  <pre><span class="tagfile f1">lib/token.js  AUTO SCATER</span>
+<span class="c">Token dikelompokkan per situs</span>
+<span class="k">function saveToken(host, tk)</span> {
+  chrome.storage.local.get(<span class="s">'siteData'</span>, <span class="k">(r) =></span> {
+    const d = r.siteData || {};
+    d[host] = Object.assign(d[host] || {}, { token: tk, sniffedAt: Date.now() });
+    chrome.storage.local.set({ siteData: d });
+  });
+}</pre>
+
+  <pre><span class="tagfile f2">modules/bg-secure.js  AUTO RELAX</span>
+<span class="c">Pengisian form menggunakan sesi situs asal</span>
+<span class="k">const sesi = sesiSitus[klaim.site]</span>;
+extractForm(sesi, { <span class="site">situs:</span> namaSitusDari(klaim.site), userId, kodeTiket, betting, scatter });</pre>
+
+  <div class="note bblue tight">Pola penyambungan konsisten: sisi penerimaan mengisi penanda dan formulir, sisi verifikasi menggunakan penanda untuk membuat antrean serta sesi yang terpisah. Satu kolom penanda, dipakai dua sisi.</div>
+</div>
+
+<!-- ====== 7. STRUKTUR DATA ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c5">Data hasil</span>
+  <h2>Struktur data dan tampilan hasil</h2>
+
+  <h3>Ruang penyimpanan</h3>
+  <pre>chrome.storage.local
+|
++-- siteData/            <span class="c">sesi token per situs</span>
+|    |-- latoto.idrbo4.com : { token }
+|    |-- bandar.idrbo1.com : { token }
+|    `-- ...
+|
++-- siteSlots/           <span class="c">antrean kerja per situs</span>
+|    |-- latoto.idrbo4.com : { retryQueue }
+|    `-- ...
+|
++-- rows/                <span class="c">klaim tercatat, semua memiliki penanda site</span>
+|    [{ userId, kodeTiket, betting, scatter, site, status, waktu }, ...]
+|
+`-- logs/                <span class="c">catatan kejadian berpenanda site</span></pre>
+
+  <h3>Contoh data klaim tersimpan</h3>
+  <table>
+    <tr><th>kode tiket</th><th>nominal</th><th>scatter</th><th>site</th><th>status</th></tr>
+    <tr><td>ABC1234567890123</td><td>50000</td><td>4</td><td><span class="tag b">latoto.idrbo4.com</span></td><td><span class="tag g">APPROVE</span></td></tr>
+    <tr><td>DEF9876543210987</td><td>10000</td><td>3</td><td><span class="tag v">bandar.idrbo1.com</span></td><td><span class="tag g">APPROVE</span></td></tr>
+    <tr><td>GHI5554443332221</td><td>8000</td><td>5</td><td><span class="tag a">fatcai.idrbo1.com</span></td><td><span class="tag r">REJECT</span></td></tr>
+    <tr><td>JKL1112223334445</td><td>20000</td><td>3</td><td><span class="tag b">wdboss.idrbo.com</span></td><td><span class="tag g">APPROVE</span></td></tr>
+  </table>
+  <p class="subNote">Setiap baris dapat dijawab dengan jelas: milik situs mana, berapa nominal, berapa scatter, dan apa keputusannya. Data inilah yang menjadi dasar seluruh tampilan dashboard, per situs maupun gabungan.</p>
+
+  <h3>Asal bagian penyusun</h3>
+  <div class="note agreen tight">Penerimaan dan pengisian form dari AUTO RELAX. Pemisahan antrean, sesi per situs, dan keputusan dari AUTO SCATER. Kedua bagian disambungkan melalui penanda asal situs yang sama. Pengembangan ini menyambungkan dua sistem yang sudah berjalan, bukan membangun sistem baru.</div>
+</div>
+
+<!-- ====== 8. RENCANA ====== -->
+<div class="page">
+  <div class="brand"></div>
+  <span class="kicker c3">Langkah kerja</span>
+  <h2>Rencana implementasi</h2>
+
+  <table>
+    <tr><th>No</th><th>Tahap</th><th>Cakupan</th><th>Indikator selesai</th></tr>
+    <tr><td>1</td><td><b>Penanda klaim</b></td><td>Menambahkan kolom asal situs pada klaim di sistem penerimaan, diisi pada saat data masuk.</td><td>Seluruh klaim tersimpan memiliki penanda asal situs.</td></tr>
+    <tr><td>2</td><td><b>Penyambungan sistem</b></td><td>Meneruskan klaim berpenanda ke modul verifikasi beserta antrean per situs.</td><td>Klaim masuk pada antrean sesuai asal situsnya.</td></tr>
+    <tr><td>3</td><td><b>Verifikasi ganda</b></td><td>Memasang pemeriksaan nominal dan scatter serta pemeriksaan akhir sebelum keputusan.</td><td>Klaim yang tidak sesuai ditolak secara otomatis.</td></tr>
+    <tr><td>4</td><td><b>Dashboard per situs</b></td><td>Menambahkan penyaringan per situs serta ringkasan jumlah klaim per situs.</td><td>Tampilan verifikatif per situs tersedia pada dashboard.</td></tr>
+    <tr><td>5</td><td><b>Uji berjalan</b></td><td>Menjalankan dua situs berbeda secara berdampingan selama periode pengujian, lalu membandingkan hasil.</td><td>Keputusan tiap situs akurat dan tidak saling memengaruhi.</td></tr>
+  </table>
+
+  <h3>Kesimpulan</h3>
+  <div class="note agreen">
+    Sistem penerimaan klaim dan sistem verifikasi yang sudah berjalan disatukan menjadi satu alur. Setiap klaim membawa penanda asal situs sejak masuk, diarahkan ke antrean situsnya, diperiksa dua lapis sebelum keputusan, dan hasilnya kembali tercatat di dashboard. Semua situs terlayani dalam satu dashboard dengan data yang terpisah rapi, dan setiap keputusan dapat ditelusuri.
+  </div>
+
+  <div class="foot">
+    <span>Usulan pengembangan sistem</span>
+    <span>Pendamping: Rencana_Perubahan_Integrasi.csv</span>
+  </div>
+</div>
+
+</body>
+</html>

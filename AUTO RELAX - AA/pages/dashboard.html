@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>AUTO RELAX by AA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700;800&display=swap');
+:root {
+  --bg-deep: #080b14;
+  --bg-card: rgba(18, 22, 40, 0.78);
+  --bg-card-hover: rgba(22, 28, 50, 0.88);
+  --bg-elevated: rgba(12, 15, 28, 0.92);
+  --border-subtle: rgba(99, 102, 241, 0.08);
+  --border-accent: rgba(99, 102, 241, 0.15);
+  --border-focus: rgba(129, 140, 248, 0.4);
+  --primary: #818cf8;
+  --primary-deep: #6366f1;
+  --primary-glow: rgba(129, 140, 248, 0.18);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --success: #22c55e;
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --info: #38bdf8;
+  --info-bg: rgba(56, 189, 248, 0.1);
+  --radius: 10px;
+  --radius-sm: 7px;
+  --radius-lg: 14px;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-glow: 0 0 20px rgba(129,140,248,0.08);
+  --transition: .2s cubic-bezier(.4,0,.2,1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(56,189,248,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 80%, rgba(139,92,246,0.03) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+#bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+#bg-image {
+  position: absolute;
+  inset: -30px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+#bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+}
+body.has-bg .card {
+  background: rgba(19,24,38,0.92);
+}
+body.has-bg .header,
+body.has-bg .tabs {
+  background: rgba(12,15,28,0.94);
+}
+.header {
+  background: rgba(12,15,28,0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 12px rgba(0,0,0,0.15);
+}
+@keyframes rgbBolt {
+  0%, 100% { color: #60a5fa; text-shadow: 0 0 4px rgba(96,165,250,0.3), 0 0 12px rgba(96,165,250,0.15); }
+  16%     { color: #a5b4fc; text-shadow: 0 0 6px rgba(165,180,252,0.4), 0 0 18px rgba(165,180,252,0.2); }
+  33%     { color: #38bdf8; text-shadow: 0 0 5px rgba(56,189,248,0.35), 0 0 16px rgba(56,189,248,0.2), 0 0 30px rgba(56,189,248,0.08); }
+  50%     { color: #60a5fa; text-shadow: 0 0 4px rgba(96,165,250,0.3), 0 0 12px rgba(96,165,250,0.15); }
+  66%     { color: var(--primary); text-shadow: 0 0 6px rgba(129,140,248,0.4), 0 0 20px rgba(129,140,248,0.15); }
+  83%     { color: #7dd3fc; text-shadow: 0 0 5px rgba(125,211,252,0.35), 0 0 14px rgba(125,211,252,0.2); }
+}
+.header .logo-svg { flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(129,140,248,0.35)); }
+.header h1 {
+  font-family: 'Comfortaa', 'Segoe UI', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  animation: rgbBolt 3s ease-in-out infinite;
+}
+.header .subtitle { font-size: 11px; color: var(--text-muted); }
+.header .online-indicator {
+  margin-left: auto; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text-muted); cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.08);
+  transition: var(--transition);
+}
+.header .online-indicator:hover {
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.15);
+}
+.header .online-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+  box-shadow: 0 0 8px rgba(34,197,94,0.5);
+  animation: blinkGreen 1.5s ease-in-out infinite;
+}
+.header .online-dot.offline { background: var(--text-muted); box-shadow: none; animation: none; }
+.header .online-num { font-weight: 700; color: #86efac; min-width: 18px; text-align: center; }
+.lite-switch {
+  position: relative; display: inline-block; width: 30px; height: 18px;
+  background: rgba(51,65,85,0.5); border-radius: 10px;
+  border: 1px solid var(--border-accent); transition: all .2s; cursor: pointer;
+}
+.lite-switch .lite-slider {
+  position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
+  background: #94a3b8; border-radius: 50%; transition: all .2s;
+}
+#lite-toggle:checked + .lite-switch { background: rgba(99,102,241,0.3); border-color: var(--primary-deep); }
+#lite-toggle:checked + .lite-switch .lite-slider { left: 14px; background: var(--primary); box-shadow: 0 0 6px rgba(129,140,248,0.4); }
+#paste-toggle:checked + .lite-switch { background: rgba(99,102,241,0.3); border-color: var(--primary-deep); }
+#paste-toggle:checked + .lite-switch .lite-slider { left: 14px; background: var(--primary); box-shadow: 0 0 6px rgba(129,140,248,0.4); }
+#lite-toggle-wrap:hover { color: #d1d5db; }
+#lite-toggle-wrap:hover .lite-switch { border-color: rgba(99,102,241,0.3); }
+#paste-toggle-wrap:hover { color: #d1d5db; }
+#livechat-ocr-toggle:checked + .lite-switch { background: rgba(99,102,241,0.3); border-color: var(--primary-deep); }
+#livechat-ocr-toggle:checked + .lite-switch .lite-slider { left: 14px; background: var(--primary); box-shadow: 0 0 6px rgba(129,140,248,0.4); }
+#livechat-ocr-toggle-wrap:hover { color: #d1d5db; }
+@keyframes blinkGreen {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.3); }
+}
+.tabs {
+  display: flex;
+  gap: 0;
+  background: rgba(12,15,28,0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 20px;
+  position: sticky;
+  top: 63px;
+  z-index: 150;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+}
+.tab-btn {
+  padding: 11px 18px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: var(--transition);
+  position: relative;
+  letter-spacing: .3px;
+}
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px 2px 0 0;
+  transition: var(--transition);
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+.tab-btn:hover {
+  color: var(--text-secondary);
+  background: rgba(99,102,241,0.04);
+}
+.tab-btn.active {
+  color: var(--primary);
+}
+.tab-btn.active::after {
+  width: 60%;
+}
+.content {
+  padding: 20px 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.tab-pane { display: none; animation: fadeIn .25s ease; }
+.tab-pane.active { display: block; }
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+}
+.card:hover {
+  border-color: rgba(99,102,241,0.2);
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+}
+.card h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: border-color var(--transition);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.1);
+}
+.form-group input:hover, .form-group select:hover, .form-group textarea:hover {
+  border-color: rgba(99,102,241,0.25);
+}
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+.btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.btn:active { transform: scale(.96); }
+.btn-sm { padding: 5px 11px; font-size: 11px; border-radius: 6px; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(99,102,241,0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: rgba(42, 48, 72, 0.7);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-accent);
+}
+.btn-secondary:hover {
+  background: rgba(55, 65, 81, 0.8);
+  color: var(--text-primary);
+  border-color: rgba(99,102,241,0.25);
+}
+.btn-warning {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fef3c7;
+  box-shadow: 0 2px 10px rgba(245,158,11,0.2);
+}
+.btn-warning:hover { box-shadow: 0 4px 16px rgba(245,158,11,0.3); transform: translateY(-1px); }
+.btn-info {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: #bfdbfe;
+  box-shadow: 0 2px 10px rgba(59,130,246,0.2);
+}
+.btn-info:hover { box-shadow: 0 4px 16px rgba(59,130,246,0.3); transform: translateY(-1px); }
+.btn-danger {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+  color: #fecaca;
+  box-shadow: 0 2px 10px rgba(239,68,68,0.2);
+}
+.btn-danger:hover { box-shadow: 0 4px 16px rgba(239,68,68,0.3); transform: translateY(-1px); }
+.btn-success {
+  background: linear-gradient(135deg, #047857, #22c55e);
+  color: #a7f3d0;
+  box-shadow: 0 2px 10px rgba(34,197,94,0.2);
+}
+.btn-success:hover { box-shadow: 0 4px 16px rgba(34,197,94,0.3); transform: translateY(-1px); }
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+th {
+  background: rgba(12, 15, 28, 0.6);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(4px);
+}
+tr:hover td { background: rgba(99,102,241,0.04); }
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.badge-success { background: var(--success-bg); color: #6ee7b7; }
+.badge-danger { background: var(--danger-bg); color: #fca5a5; }
+.badge-warning { background: var(--warning-bg); color: #fcd34d; }
+.badge-info { background: var(--info-bg); color: #93c5fd; }
+.badge-muted { background: rgba(51,65,85,0.3); color: var(--text-secondary); }
+.memo-badge {
+  display: none; background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px;
+  border-radius: 8px; margin-left: 4px; vertical-align: top;
+  line-height: 1.5;
+}
+.memo-container {
+  max-height: 420px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  padding-right: 4px;
+}
+.memo-container::-webkit-scrollbar { width: 4px; }
+.memo-container::-webkit-scrollbar-track { background: transparent; }
+.memo-container::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 4px; }
+.memo-item {
+  position: relative; padding: 10px 14px; border-radius: var(--radius);
+  background: rgba(12, 15, 28, 0.5); border: 1px solid transparent;
+  transition: all var(--transition);
+}
+.memo-item:hover {
+  border-color: var(--border-accent);
+  background: rgba(18, 22, 40, 0.7);
+}
+.memo-item.unread {
+  background: rgba(99,102,241,0.06);
+  border-left: 3px solid var(--primary);
+}
+.memo-item.unread:hover {
+  background: rgba(99,102,241,0.09);
+}
+.memo-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.memo-avatar {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+}
+.memo-avatar.self { background: rgba(129,140,248,0.15); color: var(--primary); }
+.memo-avatar.other { background: rgba(148,163,184,0.1); color: var(--text-secondary); }
+.memo-author {
+  font-size: 11px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.memo-author.self { color: var(--primary); }
+.memo-author.other { color: var(--text-secondary); }
+.memo-time {
+  font-size: 10px; color: var(--text-muted); margin-left: auto; white-space: nowrap;
+}
+.memo-badge-new {
+  font-size: 9px; padding: 1px 6px; border-radius: 6px;
+  background: var(--primary); color: #fff; font-weight: 600;
+  flex-shrink: 0;
+}
+.memo-body {
+  font-size: 13px; color: var(--text-primary); line-height: 1.55;
+  white-space: pre-wrap; word-break: break-word;
+  padding-left: 28px;
+}
+.memo-del-btn {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; padding: 0;
+  border: none; border-radius: 50%;
+  background: transparent; color: var(--text-muted);
+  font-size: 14px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all var(--transition);
+}
+.memo-item:hover .memo-del-btn { opacity: 1; }
+.memo-del-btn:hover {
+  background: rgba(239,68,68,0.12); color: var(--danger);
+}
+.empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty p { font-size: 13px; }
+.table-scroll {
+  overflow-x: auto;
+}
+.table-scroll table {
+  width: 100%;
+}
+.deco-wrap {
+  position: relative;
+}
+.deco-wrap .side-deco {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 280px;
+  z-index: -1;
+}
+.deco-wrap .side-deco.left  { left: calc(50% - 640px - 280px - 12px); }
+.deco-wrap .side-deco.right { right: calc(50% - 640px - 280px - 12px); }
+@media (max-width: 1900px) { .deco-wrap .side-deco { display: none; } }
+.deco-wrap .side-deco .deco-imgs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.deco-wrap .side-deco .deco-imgs img {
+  width: 100%;
+  object-fit: contain;
+  display: none;
+}
+.deco-wrap .side-deco .deco-imgs img.show { display: block; }
+.deco-wrap .side-deco.has-imgs .deco-icon,
+.deco-wrap .side-deco.has-imgs .deco-line,
+.deco-wrap .side-deco.has-imgs .deco-dot,
+.deco-wrap .side-deco.has-imgs .deco-symbol { display: none; }
+.side-deco .deco-icon {
+  width: 44px; height: 44px;
+  border: 1.5px solid var(--primary-deep);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 18px rgba(99,102,241,0.15), inset 0 0 18px rgba(99,102,241,0.05);
+  color: var(--primary);
+  animation: decoPulse 3s ease-in-out infinite;
+  opacity: .35;
+}
+.side-deco .deco-icon.hide  { display: none; }
+.side-deco .deco-line {
+  width: 2px;
+  height: 50px;
+  background: linear-gradient(180deg, transparent, var(--primary-deep), transparent);
+  border-radius: 1px;
+  opacity: .35;
+}
+.side-deco .deco-line.hide  { display: none; }
+.side-deco .deco-dot {
+  width: 7px; height: 7px;
+  border: 1.5px solid var(--primary);
+  border-radius: 50%;
+  animation: decoPulse 2s ease-in-out infinite;
+  opacity: .35;
+}
+.side-deco .deco-dot.hide  { display: none; }
+.side-deco .deco-dot:nth-child(2) { animation-delay: .4s; }
+.side-deco .deco-dot:nth-child(5) { animation-delay: .8s; }
+.side-deco .deco-dot:nth-child(7) { animation-delay: 1.2s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+#panduanSelect:hover { border-color: rgba(129,140,248,0.5); box-shadow: 0 0 20px rgba(99,102,241,0.15); }
+#panduanContainer .loading-panduan {
+  position:absolute;inset:0;display:flex;justify-content:center;align-items:center;
+  background:rgba(11,15,26,0.92);border-radius:12px;z-index:10;
+}
+#panduanContainer .loading-panduan .spinner {
+  width:50px;height:50px;border:3px solid rgba(99,102,241,0.15);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes lcBlink { 0%,100%{opacity:1}50%{opacity:0.2} }
+.stat-blink { animation: lcBlink 1s infinite; }
+#panduanClose:hover { background:rgba(99,102,241,0.15); transform:scale(1.1); box-shadow:0 0 18px rgba(99,102,241,0.2); }
+.zoom-panduan-btn:hover { background:rgba(99,102,241,0.15); transform:scale(1.1); box-shadow:0 0 18px rgba(99,102,241,0.2); }
+.prediksi-box {
+  background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(19,24,38,0.9));
+  border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px;
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 8px 30px rgba(99,102,241,0.08);
+}
+.prediksi-control-title {
+  font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 18px;
+  background: linear-gradient(45deg, var(--primary), var(--info));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.prediksi-form-group {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.prediksi-select {
+  width: 100%; max-width: 500px; padding: 12px 18px; font-size: 14px; font-weight: 600;
+  font-family: inherit; background: rgba(11,15,26,0.85); color: #e2e8f0;
+  border: 2px solid rgba(99,102,241,0.25); border-radius: var(--radius); cursor: pointer;
+  appearance: none; outline: none;
+  background-image: url("data:image/svg+xml;charset=UTF8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 20px;
+  transition: all .3s ease;
+}
+.prediksi-select:hover { border-color: rgba(129,140,248,0.5); box-shadow: 0 0 20px rgba(99,102,241,0.15); }
+.prediksi-select:focus { border-color: var(--primary); box-shadow: 0 0 25px rgba(99,102,241,0.2); }
+.prediksi-select option { background: #0b0f1a; color: #e2e8f0; padding: 8px; }
+.prediksi-welcome {
+  text-align: center; padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(15,23,42,0.7), rgba(19,24,38,0.7));
+  border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);
+}
+.prediksi-results {
+  background: linear-gradient(135deg, rgba(11,15,26,0.95), rgba(15,23,42,0.95));
+  border-radius: var(--radius-lg); padding: 28px;
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 0 40px rgba(99,102,241,0.1);
+  animation: fadeIn .6s ease;
+}
+.prediksi-image-container {
+  text-align: center; margin-bottom: 20px;
+}
+.prediksi-image-container img {
+  max-width: 200px; max-height: 80px; object-fit: contain;
+  border-radius: var(--radius); padding: 8px;
+  background: rgba(11,15,26,0.6); border: 1px solid var(--border-accent);
+  transition: all .3s ease;
+}
+.prediksi-image-container img:hover {
+  transform: scale(1.08); box-shadow: 0 0 30px rgba(99,102,241,0.2);
+}
+.prediksi-table {
+  width: 100%; max-width: 600px; margin: 0 auto;
+  border-collapse: collapse; border-radius: var(--radius); overflow: hidden;
+  background: rgba(11,15,26,0.8); border: 1px solid var(--border-accent);
+}
+.prediksi-table th {
+  background: rgba(15,23,42,0.9); color: var(--primary); padding: 10px 14px;
+  text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; border-bottom: 1px solid rgba(99,102,241,0.06); width: 40%;
+}
+.prediksi-table td {
+  background: rgba(11,15,26,0.6); color: var(--text-primary); padding: 9px 14px;
+  text-align: center; font-size: 13px; font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.prediksi-table tr:last-child th,
+.prediksi-table tr:last-child td { border-bottom: none; }
+.prediksi-table tr:hover th { background: rgba(30,58,95,0.5); color: #a5b4fc; }
+.prediksi-table tr:hover td { background: rgba(30,58,95,0.3); color: #e2e8f0; }
+@keyframes decoPulse {
+  0%, 100% { opacity: .3; transform: scale(1); }
+  50%      { opacity: .7; transform: scale(1.12); }
+}
+.deco-symbol {
+  width: 120px; text-align: center;
+  font-size: 10px; color: var(--primary-deep); letter-spacing: 6px;
+  writing-mode: vertical-lr;
+  opacity: .2;
+  font-weight: 300;
+}
+.deco-symbol.hide  { display: none; }
+.card {
+  position: relative;
+  z-index: 1;
+}
+.deco-edit-btn {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-accent);
+  border-radius: 6px;
+  background: rgba(12, 15, 28, 0.6);
+  color: var(--primary-deep);
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 5;
+  transition: all var(--transition);
+  opacity: .5;
+  backdrop-filter: blur(4px);
+}
+.deco-edit-btn:hover { opacity: 1; background: rgba(26, 32, 53, 0.8); }
+#deco-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#deco-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  max-width: 440px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+#deco-panel h3 { font-size: 15px; color: var(--text-primary); margin-bottom: 16px; }
+#deco-panel .deco-field { margin-bottom: 16px; }
+#deco-panel .deco-field label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 4px; }
+#deco-panel .deco-field .deco-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+#deco-panel .deco-field .deco-list::-webkit-scrollbar { width: 4px; }
+#deco-panel .deco-field .deco-list::-webkit-scrollbar-track { background: transparent; }
+#deco-panel .deco-field .deco-list::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 4px; }
+#deco-panel .deco-field .deco-list::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.4); }
+#deco-panel .deco-field .deco-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(12, 15, 28, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+#deco-panel .deco-field .deco-list-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+#deco-panel .deco-field .deco-list-item .dli-info {
+  flex: 1;
+  font-size: 10px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#deco-panel .deco-field .deco-add-btn {
+  border: 1.5px dashed rgba(99,102,241,0.2);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: transparent;
+  width: 100%;
+}
+#deco-panel .deco-field .deco-add-btn:hover { border-color: var(--primary-deep); color: var(--text-secondary); background: rgba(99,102,241,0.04); }
+#deco-panel .deco-field .deco-add-btn.drag-over { border-color: var(--primary-deep); background: rgba(26, 32, 53, 0.8); }
+#deco-panel .deco-field .dli-count { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+@media (max-width: 1100px) {
+  .deco-wrap .side-deco { display: none; }
+}
+.actions { display: flex; gap: 3px; flex-wrap: nowrap; }
+.actions .btn-sm { padding: 4px 7px; font-size: 10px; white-space: nowrap; }
+.log-entry {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-family: 'Consolas','Courier New',monospace;
+  line-height: 1.5;
+}
+.log-entry .time { color: var(--text-muted); margin-right: 12px; display: inline-block; min-width: 68px; }
+.log-container { max-height: 500px; overflow-y: auto; }
+.log-container::-webkit-scrollbar { width: 5px; }
+.log-container::-webkit-scrollbar-track { background: rgba(12, 15, 28, 0.5); border-radius: 3px; }
+.log-container::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 3px; }
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #065f46, #047857);
+  color: #a7f3d0;
+  padding: 12px 22px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 12px rgba(34,197,94,0.1);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  z-index: 1000;
+  border: 1px solid rgba(167,243,208,0.12);
+  backdrop-filter: blur(8px);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error {
+  background: linear-gradient(135deg, #991b1b, #b91c1c);
+  color: #fca5a5;
+  border-color: rgba(252,165,165,0.12);
+}
+#qa-status { font-size: 11px; color: #34d399; white-space: nowrap; font-weight: 500; transition: color var(--transition); }
+#qa-status.dup { color: var(--danger); }
+#dash-auto-ambil:checked + span { background: rgba(99,102,241,0.4); border-color: var(--primary-deep); }
+#dash-auto-ambil:checked + span #dash-auto-ambil-dot { left: 11px; background: var(--primary); }
+#scan-preview-box-1 { border-left: 2px solid #facc15; }
+#scan-preview-box-2 { border-left: 2px solid #818cf8; }
+#scan-status.scan-ok { color: #6ee7b7; }
+#scan-status.scan-err { color: #fca5a5; }
+#btn-next-ocr:hover { background:#334155; }
+#btn-next-ocr:active { background:#475569; }
+.qa-input {
+  max-width: 280px;
+  border: 1.5px solid rgba(99,102,241,0.25) !important;
+  background: rgba(15,23,42,0.8) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 0 rgba(99,102,241,0);
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.qa-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15), 0 0 12px rgba(99,102,241,0.08) !important;
+  background: rgba(15,23,42,0.95) !important;
+}
+.qa-input:hover {
+  border-color: rgba(129,140,248,0.4) !important;
+}
+#btn-2x.active {
+  background: linear-gradient(135deg, #065f46, #047857) !important;
+  color: #a7f3d0 !important;
+  box-shadow: 0 0 0 2px rgba(6,95,70,0.4);
+}
+.row-approved td { background: rgba(6,95,70,0.1); }
+.row-approved:hover td { background: rgba(6,95,70,0.16); }
+.row-notfound td { background: rgba(153,27,27,0.18); }
+.row-notfound:hover td { background: rgba(153,27,27,0.26); }
+.cb-wrap { display: flex; align-items: center; gap: 5px; }
+.cb-wrap input[type="checkbox"] { width: 16px; height: 16px; }
+.cb-wrap .row-num { font-size: 11px; color: var(--text-muted); font-weight: 500; min-width: 22px; text-align: center; }
+input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  filter: none;
+}
+#pagination-bar select { cursor: pointer; }
+#pagination-bar select:focus { outline: none; border-color: var(--primary-deep); }
+.page-btn { padding: 3px 9px; border: 1px solid var(--border-accent); border-radius: 5px; background: rgba(12, 15, 28, 0.6); color: var(--text-secondary); font-size: 11px; cursor: pointer; transition: all var(--transition); }
+.page-btn:hover { border-color: rgba(99,102,241,0.25); color: var(--text-primary); }
+.page-btn.active { background: rgba(99,102,241,0.12); border-color: var(--primary-deep); color: #a5b4fc; }
+.page-btn:disabled { opacity: .35; cursor: default; }
+#gen-result {
+  padding: 16px 20px;
+  background: rgba(12, 15, 28, 0.6);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius);
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+#gen-result .pw-line { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+#gen-result .pw-label { color: var(--text-muted); min-width: 90px; font-size: 14px; }
+#gen-result .pw-value { color: var(--text-primary); font-weight: 700; font-family: 'Consolas', monospace; font-size: 18px; letter-spacing: 1px; }
+#gen-result .pw-message { color: #fcd34d; margin-top: 8px; font-size: 13px; }
+#gen-result .pw-copy-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-deep);
+  color: #fff;
+  transition: all var(--transition);
+}
+#gen-result .pw-copy-btn:hover { background: var(--primary); }
+#gen-result .pw-copy-btn.copied { background: #065f46; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(12, 15, 28, 0.4); }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.3); }
+@media (max-width: 768px) {
+  .form-row { flex-direction: column; }
+  .content { padding: 12px; }
+  .header { padding: 12px 16px; }
+  .header h1 { font-size: 17px; }
+  .tabs { padding: 0 10px; overflow-x: auto; }
+  .tab-btn { padding: 10px 14px; font-size: 12px; }
+  .actions { gap: 2px; }
+  .actions .btn-sm { padding: 4px 6px; font-size: 10px; }
+}
+
+#ai-messages::-webkit-scrollbar { width: 5px; }
+#ai-messages::-webkit-scrollbar-track { background: rgba(12, 15, 28, 0.5); border-radius: 3px; }
+#ai-messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.15); border-radius: 3px; }
+#ai-input:focus { border-color: var(--primary-deep); }
+.ai-empty { text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px; }
+.ai-msg { padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6;max-width:80%;word-wrap:break-word;position:relative;transition:box-shadow var(--transition);white-space:pre-wrap; }
+.ai-msg:hover { box-shadow:0 0 0 1px rgba(99,102,241,0.15); }
+.ai-user { align-self:flex-end;background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;border-bottom-right-radius:4px;box-shadow:0 2px 8px rgba(99,102,241,0.2); }
+.ai-assistant { align-self:flex-start;background:rgba(26, 32, 53, 0.6);color:var(--text-primary);border:1px solid var(--border-accent);border-bottom-left-radius:4px;backdrop-filter:blur(4px); }
+.ai-msg-wrap { position:relative;display:flex;flex-direction:column; }
+.ai-loading { opacity:.5; }
+.ai-error { color:#fca5a5;border-color:rgba(248,113,113,0.2);background:rgba(153,27,27,0.2); }
+.ai-msg code { background:rgba(0,0,0,0.3);padding:2px 5px;border-radius:4px;font-size:12px; }
+.ai-msg pre { background:rgba(0,0,0,0.4);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0; }
+.ai-msg pre code { background:none;padding:0; }
+.ai-msg .ai-img-thumb { max-width:180px;max-height:180px;border-radius:8px;object-fit:cover;cursor:pointer;transition:transform .15s,box-shadow .15s;display:block; }
+.ai-msg .ai-img-thumb:hover { transform:scale(1.03);box-shadow:0 0 12px rgba(99,102,241,0.25); }
+#ai-img-close:hover { background:rgba(99,102,241,0.15);transform:scale(1.1); }
+#loginOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.8);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+#loginOverlay.hidden { display: none; }
+#loginBox {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 32px; width: 360px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(99,102,241,0.08);
+  text-align: center;
+  animation: fadeIn .4s ease;
+}
+#loginBox h2 { font-size: 20px; color: var(--text-primary); margin-bottom: 6px; }
+#loginBox p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+#loginBox .login-error { color: var(--danger); font-size: 12px; margin-top: 8px; display: none; }
+#loginBox .login-error.show { display: block; }
+#loginBox .login-input {
+  width: 100%; padding: 10px 14px; margin-bottom: 8px;
+  background: rgba(15, 23, 42, 0.7); color: var(--text-primary);
+  border: 1px solid var(--border-accent); border-radius: var(--radius-sm);
+  font-size: 14px; text-align: center; outline: none;
+  transition: border-color var(--transition);
+}
+#loginBox .login-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(129,140,248,0.1); }
+#loginBox button {
+  width: 100%; margin-top: 14px; padding: 11px;
+  background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 2px 10px rgba(99,102,241,0.25);
+}
+#loginBox button:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.35); transform: translateY(-1px); }
+#loginBox button:disabled { opacity: .5; cursor: default; transform: none; }
+</style>
+</head>
+<body>
+
+<div id="bg-container">
+  <div id="bg-image"></div>
+  <div id="bg-overlay"></div>
+</div>
+
+<div class="header">
+  <img class="logo-svg" src="../icons/icon48.png" width="36" height="36" alt="AUTO RELAX">
+  <h1> AUTO RELAX</h1>
+  <span class="subtitle">Founder AA</span>
+  <button id="ocr-preview-btn" title="Lihat potongan &amp; preprocessing OCR (debug crop)" style="margin-left:8px;padding:5px 12px;font-size:11px;font-weight:600;color:#818cf8;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:8px;cursor:pointer;transition:all .2s;flex-shrink:0;">🔍 OCR Preview</button>
+  <div class="online-indicator">
+    <span class="online-dot" id="onlineDot"></span>
+    <span class="online-num" id="onlineNum">0</span>
+    <span>Online</span>
+  </div>
+  <span id="sessionEmail" style="font-size:12px;color:#94a3b8;margin-left:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+  <a href="#" id="logoutBtn" style="font-size:12px;color:#f87171;margin-left:12px;text-decoration:none;">Logout</a>
+</div>
+<div id="onlineEmails" style="border-top:1px solid rgba(99,102,241,0.1);padding:6px 16px;font-size:11px;color:#94a3b8;display:none;gap:4px;max-height:120px;overflow-y:auto;flex-wrap:wrap;"></div>
+<div class="tabs" id="tabs">
+  <button class="tab-btn" data-tab="data"> Data</button>
+  <button class="tab-btn" data-tab="logs"> Logs</button>
+  <button class="tab-btn" data-tab="panduan"> Panduan</button>
+  <button class="tab-btn" data-tab="prediksi"> Prediksi</button>
+  <button class="tab-btn" data-tab="parlay"> Parlay</button>
+  <button class="tab-btn" data-tab="hadiah"> Hadiah</button>
+  <button class="tab-btn" data-tab="jadwal"> Jadwal</button>
+  <button class="tab-btn" data-tab="generator-bola"> Generator Bola</button>
+  <button class="tab-btn" data-tab="ai"> AI Chat</button>
+  <button class="tab-btn" data-tab="typing"> Typing Test</button>
+  <button class="tab-btn" data-tab="memo"> Memo<span id="memo-badge" class="memo-badge"></span></button>
+</div>
+
+<div class="content">
+  <div class="tab-pane" id="pane-data">
+    <div class="deco-wrap" style="position:relative;">
+      <div class="side-deco left" id="side-deco-left">
+        <div class="deco-imgs" id="deco-imgs-left"></div>
+        <div class="deco-icon" id="deco-ico-l1">✦</div>
+        <div class="deco-line" id="deco-ln-l1"></div>
+        <div class="deco-dot" id="deco-dot-l1"></div>
+        <div class="deco-line" id="deco-ln-l2" style="height:36px;"></div>
+        <div class="deco-icon" id="deco-ico-l2" style="width:36px;height:36px;font-size:16px;">◆</div>
+        <div class="deco-line" id="deco-ln-l3"></div>
+        <div class="deco-dot" id="deco-dot-l2"></div>
+        <div class="deco-symbol" id="deco-sym-l">SCATTER</div>
+        <div class="deco-dot" id="deco-dot-l3"></div>
+        <div class="deco-line" id="deco-ln-l4"></div>
+        <div class="deco-icon" id="deco-ico-l3" style="width:28px;height:28px;font-size:13px;">⚡</div>
+      </div>
+      <div class="card" style="padding:0;">
+      <div style="padding:20px 20px 0;">
+        <button class="deco-edit-btn" id="deco-edit-btn">🎨</button>
+        <div class="form-row" style="margin-bottom:12px;gap:24px;position:relative;">
+          <div style="flex:2;min-width:0;">
+            <div class="form-row" style="gap:16px;">
+              <div style="flex:1;min-width:0;">
+                <div class="form-group" style="margin:0 0 8px 0;">
+                  <label style="font-size:11px;color:#94a3b8;">User ID (tambah "TS" untuk tanggal mundur 1 hari)</label>
+                  <div style="display:flex;gap:6px;">
+                    <input type="text" id="qa-user" class="qa-input" placeholder="User ID (contoh: U12345 TS)" style="flex:1;max-width:100%;">
+                    <button id="btn-2x" class="btn btn-sm btn-info" style="padding:5px 14px;flex-shrink:0;font-weight:700;letter-spacing:.5px;" tabindex="-1" title="Proses 2 Kode Tiket sekaligus">2x</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin:0 0 8px 0;">
+                  <div class="form-group" style="margin:0;flex:1;min-width:0;">
+                    <label style="font-size:11px;color:#94a3b8;">Kode Tiket 1</label>
+                    <input type="text" id="qa-kode" class="qa-input" placeholder="Kode Tiket 1" style="width:100%;max-width:100%;">
+                  </div>
+                  <div id="kode-2-wrap" class="form-group" style="margin:0;flex:1;min-width:0;display:none;">
+                    <label style="font-size:11px;color:#94a3b8;">Kode Tiket 2</label>
+                    <input type="text" id="qa-kode-2" class="qa-input" placeholder="Kode Tiket 2" style="width:100%;max-width:100%;">
+                  </div>
+                </div>
+                <span id="qa-status"></span>
+                <div style="margin:12px 0;border-top:2px solid rgba(99,102,241,0.35);"></div>
+                 <div class="card" style="padding:14px;margin:0 0 8px 0;background:#0f1322;position:relative;" id="scan-card-dash">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <h2 style="margin:0;">Scan Gambar</h2>
+                    <label id="dash-auto-ambil-wrap" style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;user-select:none;flex-shrink:0;">
+                      <input type="checkbox" id="dash-auto-ambil" style="position:absolute;opacity:0;width:0;height:0;">
+                      <span style="width:20px;height:10px;border-radius:5px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.2);position:relative;transition:background .2s;"><span id="dash-auto-ambil-dot" style="width:6px;height:6px;border-radius:50%;background:#64748b;position:absolute;top:1px;left:1px;transition:left .2s,background .2s;"></span></span>
+                      <span style="font-size:9px;color:#94a3b8;letter-spacing:.3px;">+Ambil</span>
+                    </label>
+                  </div>
+                    <div class="form-group" style="margin:0;">
+                      <div style="display:flex;gap:4px;">
+                        <input type="text" id="scan-url" class="qa-input" placeholder="URL gambar 1..." style="flex:1;max-width:100%;">
+                        <button class="btn btn-sm btn-secondary" id="btn-scan-clear" style="padding:4px 8px;font-size:10px;" tabindex="-1">✕</button>
+                      </div>
+                    </div>
+                    <div class="form-group" style="margin:4px 0 0 0;">
+                      <div style="display:flex;gap:4px;">
+                        <input type="text" id="scan-url-2" class="qa-input" placeholder="URL gambar 2 (opsional)..." style="flex:1;max-width:100%;">
+                      </div>
+                    </div>
+                    <div id="scan-status" style="font-size:10px;color:#64748b;min-height:12px;flex:1;"></div>
+                 </div>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+                <div class="form-group" style="margin:0;flex:1;display:flex;flex-direction:column;">
+                  <label style="font-size:11px;color:#94a3b8;">Input Massal — 1 baris per tiket</label>
+                  <textarea id="qa-note" class="qa-input" style="width:100%;max-width:100%;resize:vertical;min-height:110px;font-family:inherit;padding:9px 12px;line-height:1.4;color:#d1d5db;flex:1;" rows="4" placeholder="Contoh:&#10;U12345 ABC123&#10;U67890 TS,DEF456&#10;U11111 TS GHI789&#10;&#10;Pisah dengan spasi atau koma. TS otomatis terdeteksi."></textarea>
+                  <button class="btn btn-sm btn-secondary" id="btn-submit-note" style="margin-top:6px;">Submit ke Data</button>
+            </div>
+              </div>
+         </div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;gap:10px;margin-bottom:6px;">
+              <label id="lite-toggle-wrap" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#64748b;cursor:pointer;user-select:none;">
+                <input type="checkbox" id="lite-toggle" style="position:absolute;opacity:0;width:0;height:0;">
+                <span class="lite-switch"><span class="lite-slider"></span></span>
+                Lite
+              </label>
+              <label id="paste-toggle-wrap" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#64748b;cursor:pointer;user-select:none;">
+                <input type="checkbox" id="paste-toggle" style="position:absolute;opacity:0;width:0;height:0;">
+                <span class="lite-switch"><span class="lite-slider"></span></span>
+                Auto Paste
+              </label>
+              <label id="livechat-ocr-toggle-wrap" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#64748b;cursor:pointer;user-select:none;">
+                <input type="checkbox" id="livechat-ocr-toggle" style="position:absolute;opacity:0;width:0;height:0;">
+                <span class="lite-switch"><span class="lite-slider"></span></span>
+                Assist Livechat
+              </label>
+            </div>
+            <div class="card" style="padding:14px;margin-top:8px;background:#0f1322;">
+              <h2 style="margin-bottom:10px;">Generator Password</h2>
+              <div class="form-group" style="margin:0;">
+                <input type="text" id="gen-user" class="qa-input" placeholder="Tempel User ID di sini" style="max-width:100%;">
+              </div>
+              <div id="gen-result" style="display:none;"></div>
+            </div>
+          </div>
+          <div id="scan-preview-wrap" style="display:none;position:absolute;top:0;right:0;width:65%;z-index:10;background:#0c0f1a;border-radius:10px;border:1px solid rgba(99,102,241,0.15);box-shadow:0 8px 32px rgba(0,0,0,0.6);padding:8px;">
+             <div style="display:flex;gap:8px;align-items:flex-start;">
+               <div id="scan-preview-box-1" class="scan-preview-box" style="display:none;position:relative;width:50%;flex-shrink:0;">
+                 <div style="position:relative;padding:4px;background:#0f1322;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">
+                 <span style="position:absolute;top:-2px;left:-2px;width:14px;height:14px;border-top:3px solid #facc15;border-left:3px solid #facc15;border-radius:3px 0 0 0;pointer-events:none;"></span>
+                 <span style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-top:3px solid #facc15;border-right:3px solid #facc15;border-radius:0 3px 0 0;pointer-events:none;"></span>
+                 <span style="position:absolute;bottom:-2px;left:-2px;width:14px;height:14px;border-bottom:3px solid #facc15;border-left:3px solid #facc15;border-radius:0 0 0 3px;pointer-events:none;"></span>
+                 <span style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-bottom:3px solid #facc15;border-right:3px solid #facc15;border-radius:0 0 3px 0;pointer-events:none;"></span>
+                 <img class="scan-preview" style="display:block;width:100%;border-radius:4px;object-fit:contain;cursor:pointer;background:transparent;"/>
+                 </div>
+               </div>
+               <div id="scan-preview-box-2" class="scan-preview-box" style="display:none;position:relative;width:50%;flex-shrink:0;">
+                 <div style="position:relative;padding:4px;background:#0f1322;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.5);">
+                 <span style="position:absolute;top:-2px;left:-2px;width:14px;height:14px;border-top:3px solid #818cf8;border-left:3px solid #818cf8;border-radius:3px 0 0 0;pointer-events:none;"></span>
+                 <span style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-top:3px solid #818cf8;border-right:3px solid #818cf8;border-radius:0 3px 0 0;pointer-events:none;"></span>
+                 <span style="position:absolute;bottom:-2px;left:-2px;width:14px;height:14px;border-bottom:3px solid #818cf8;border-left:3px solid #818cf8;border-radius:0 0 0 3px;pointer-events:none;"></span>
+                 <span style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;border-bottom:3px solid #818cf8;border-right:3px solid #818cf8;border-radius:0 0 3px 0;pointer-events:none;"></span>
+                 <img class="scan-preview" style="display:block;width:100%;border-radius:4px;object-fit:contain;cursor:pointer;background:transparent;"/>
+                 </div>
+               </div>
+             </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap;" id="bulk-bar">
+          <input type="checkbox" id="select-all" style="width:16px;height:16px;">
+          <label for="select-all" style="font-size:12px;color:#9ca3af;cursor:pointer;">All</label>
+          <button class="btn btn-sm btn-warning" id="btn-cekbet-selected">CEK ULANG</button>
+          <button class="btn btn-sm btn-success" id="btn-bonus-selected">INPUT BONUS</button>
+          <button class="btn btn-sm btn-danger" id="btn-delete-selected">Hapus</button>
+          <span id="bulk-info" style="font-size:11px;color:#6b7280;margin-left:6px;"></span>
+          <span style="margin-left:auto;">
+            <button class="btn btn-sm btn-secondary" id="btn-export">Export Data</button>
+            <button class="btn btn-sm btn-secondary" id="btn-import">Import Data</button>
+            <button class="btn btn-sm btn-info" id="btn-csv">CSV Export</button>
+            <button class="btn btn-sm btn-danger" id="btn-delete-all">Hapus Semua Data</button>
+          </span>
+        </div>
+        <div id="stats-bar" style="display:flex;align-items:center;gap:16px;margin-bottom:10px;padding:8px 16px;background:#0f1322;border-radius:8px;border:1px solid rgba(99,102,241,0.06);font-size:12px;flex-wrap:wrap;">
+          <span id="stat-warn" style="display:none;color:#ef4444;font-size:14px;" title=""></span>
+          <span style="color:#94a3b8;">Total: <strong style="color:#d1d5db;" id="stat-total">0</strong></span>
+          <span class="stat-filter" data-filter="APPROVED" style="color:#22c55e;cursor:pointer;transition:opacity .15s;" title="Klik untuk filter">✓ Approve: <strong style="color:#86efac;" id="stat-approved">0</strong></span>
+          <span class="stat-filter" data-filter="REJECTED" style="color:#ef4444;cursor:pointer;transition:opacity .15s;" title="Klik untuk filter">✗ Reject: <strong style="color:#fca5a5;" id="stat-rejected">0</strong></span>
+          <span class="stat-filter" data-filter="PENDING" style="color:#fbbf24;cursor:pointer;transition:opacity .15s;" title="Klik untuk filter">⟳ Pending: <strong style="color:#fde68a;" id="stat-pending">0</strong></span>
+          <span class="stat-filter" data-filter="NOTFOUND" style="color:#f97316;cursor:pointer;transition:opacity .15s;" title="Klik untuk filter">! Not Found: <strong style="color:#fdba74;" id="stat-notfound">0</strong></span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:#6b7280;">Tampil</span>
+            <select id="per-page" style="padding:4px 8px;background:rgba(15,23,42,0.7);border:1px solid rgba(56,189,248,0.12);border-radius:6px;color:#e2e8f0;font-size:12px;">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="500">500</option>
+            </select>
+            <span id="page-info" style="font-size:12px;"></span>
+            <div id="page-nav" style="display:flex;gap:4px;"></div>
+          </span>
+          <select id="filter-status" style="padding:5px 8px;background:rgba(15,23,42,0.7);border:1px solid rgba(56,189,248,0.12);border-radius:6px;color:#e2e8f0;font-size:12px;">
+            <option value="">Semua Status</option>
+            <option value="APPROVED">✓ Approve</option>
+            <option value="REJECTED">✗ Reject</option>
+            <option value="PENDING">⟳ Pending</option>
+            <option value="NOTFOUND">! Not Found</option>
+          </select>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:#6b7280;">Cari</span>
+            <input type="text" id="search-input" placeholder="User ID / Transaksi" style="padding:5px 10px;background:rgba(15,23,42,0.7);border:1px solid rgba(56,189,248,0.12);border-radius:6px;color:#e2e8f0;font-size:12px;width:170px;">
+          </span>
+        </div>
+        <input type="file" id="import-file-input" accept=".json" style="display:none;">
+      </div>
+      <div class="table-scroll"><table>
+          <thead>
+            <tr>
+              <th style="width:100px;"></th>
+              <th>USER ID</th>
+              <th>Kode Tiket</th>
+              <th>Betting</th>
+              <th>SCATTER</th>
+              <th>HADIAH</th>
+              <th>STATUS</th>
+              <th>Keterangan</th>
+              <th>DASHBOARD BONUS</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="data-table-body">
+            <tr><td colspan="10" class="empty"><p>Belum ada data. Isi User ID &amp; Kode Tiket di atas</p></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="side-deco right" id="side-deco-right">
+        <div class="deco-imgs" id="deco-imgs-right"></div>
+        <div class="deco-dot" id="deco-dot-r1"></div>
+        <div class="deco-line" id="deco-ln-r1"></div>
+        <div class="deco-icon" id="deco-ico-r1" style="width:28px;height:28px;font-size:13px;">⚡</div>
+        <div class="deco-line" id="deco-ln-r2" style="height:36px;"></div>
+        <div class="deco-symbol" id="deco-sym-r">BONUS</div>
+        <div class="deco-dot" id="deco-dot-r2"></div>
+        <div class="deco-line" id="deco-ln-r3"></div>
+        <div class="deco-icon" id="deco-ico-r2" style="width:36px;height:36px;font-size:16px;">◇</div>
+        <div class="deco-line" id="deco-ln-r4"></div>
+        <div class="deco-dot" id="deco-dot-r3"></div>
+        <div class="deco-icon" id="deco-ico-r3">✦</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-logs">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 style="margin:0;">Aktivitas</h2>
+        <button class="btn btn-sm btn-warning" id="btn-clear-logs">Hapus Logs</button>
+      </div>
+      <div class="log-container" id="log-container">
+        <div class="empty"><p>Belum ada aktivitas.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-panduan">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:18px;">
+        <h2 style="font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#818cf8;text-shadow:0 0 20px rgba(129,140,248,0.3);">Gambar Cara Betting Togel</h2>
+        <div style="font-size:13px;color:#6b7280;margin-top:4px;">Panduan lengkap cara melakukan betting togel</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.15);color:#a5b4fc;padding:10px 16px;margin-bottom:18px;border-radius:8px;font-weight:700;text-align:center;font-size:13px;text-transform:uppercase;overflow:hidden;white-space:nowrap;">
+        <span style="display:inline-block;animation:marquee 15s linear infinite;padding-left:100%;">SELAMAT DATANG DI PANDUAN BETTING TOGEL | PANDUAN LENGKAP CARA BETTING TOGEL</span>
+      </div>
+      <div style="text-align:center;margin-bottom:18px;">
+        <select id="panduanSelect" style="width:100%;max-width:600px;padding:12px 18px;font-size:14px;font-weight:600;font-family:inherit;background:rgba(15,23,42,0.85);color:#e2e8f0;border:2px solid rgba(99,102,241,0.25);border-radius:10px;cursor:pointer;appearance:none;outline:none;background-image:url('data:image/svg+xml;charset=UTF8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%236366f1\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e');background-repeat:no-repeat;background-position:right 14px center;background-size:20px;transition:all .3s ease;">
+          <option value="" style="background:#0f1322;color:#94a3b8;">-- Pilih Panduan --</option>
+          <option value="https://i.imgur.com/sAT9he1.png" style="background:#0f1322;color:#e2e8f0;">1.1 Cara Bet 4D 3D 2D</option>
+          <option value="https://i.imgur.com/4uosxH1.png" style="background:#0f1322;color:#e2e8f0;">1.2 Cara Bet Bb</option>
+          <option value="https://i.imgur.com/fzw0OQl.png" style="background:#0f1322;color:#e2e8f0;">1.3 Cara Bet Bbfs (Bb Campuran)</option>
+          <option value="https://i.imgur.com/uctIKzf.png" style="background:#0f1322;color:#e2e8f0;">1.4 Cara Bet Angka Tarung</option>
+          <option value="https://i.imgur.com/Q50jW4e.png" style="background:#0f1322;color:#e2e8f0;">1.5 Cara Bet Fast 4D</option>
+          <option value="https://i.imgur.com/XHfBtfL.png" style="background:#0f1322;color:#e2e8f0;">1.6 Cara Bet 4D, 3D, 2D Easy</option>
+          <option value="https://i.imgur.com/uJFQarG.png" style="background:#0f1322;color:#e2e8f0;">1.7 Cara Bet 3D</option>
+          <option value="https://i.imgur.com/7gyU5lO.png" style="background:#0f1322;color:#e2e8f0;">1.8 Cara Bet 2D Belakang</option>
+          <option value="https://i.imgur.com/Wh9LLZH.png" style="background:#0f1322;color:#e2e8f0;">1.9 Cara Bet 2D Depan</option>
+          <option value="https://i.imgur.com/3HjkZCu.png" style="background:#0f1322;color:#e2e8f0;">2.0 Cara Bet 2D Tengah</option>
+          <option value="https://i.imgur.com/a4NHaIk.png" style="background:#0f1322;color:#e2e8f0;">2.1 Cara Bet Colok Bebas</option>
+          <option value="https://i.imgur.com/qtxc3tv.png" style="background:#0f1322;color:#e2e8f0;">2.2 Cara Bet Colok Bebas 2D</option>
+          <option value="https://i.imgur.com/JNCWCqu.png" style="background:#0f1322;color:#e2e8f0;">2.3 Cara Bet Colok Naga</option>
+          <option value="https://i.imgur.com/n39qLYT.png" style="background:#0f1322;color:#e2e8f0;">2.4 Cara Bermain Dan Pengertian Colok Jitu</option>
+          <option value="https://i.imgur.com/E54ZOyy.png" style="background:#0f1322;color:#e2e8f0;">2.5 Cara Bermain Tengah Tepi</option>
+          <option value="https://i.imgur.com/gBLLJlh.png" style="background:#0f1322;color:#e2e8f0;">2.6 Cara Bermain Togel Menu Bet [Dasar]</option>
+          <option value="https://i.imgur.com/fT8OwHk.png" style="background:#0f1322;color:#e2e8f0;">2.7 Cara Bermain Dan Bet Togel 50-50</option>
+          <option value="https://i.imgur.com/XUmmNBE.png" style="background:#0f1322;color:#e2e8f0;">2.8 Cara Betting Shio</option>
+          <option value="https://i.imgur.com/jW3gHDi.png" style="background:#0f1322;color:#e2e8f0;">2.9 Seputaran Pengertian Dan Cara Bermain Silang Homo</option>
+          <option value="https://i.imgur.com/1ZG3LGW.png" style="background:#0f1322;color:#e2e8f0;">3.0 Seputaran Pengertian Dan Cara Bermain Kembang Kempis</option>
+          <option value="https://i.imgur.com/p6wPJon.png" style="background:#0f1322;color:#e2e8f0;">3.1 Seputaran Pengertian Dan Cara Bermain Kombinasi</option>
+        </select>
+      </div>
+      <div id="panduanDisplay" style="display:none;text-align:center;">
+        <div id="panduanContainer" style="position:relative;display:inline-block;max-width:100%;margin-bottom:16px;overflow:hidden;border-radius:12px;border:2px solid rgba(99,102,241,0.2);box-shadow:0 0 30px rgba(99,102,241,0.1);background:rgba(15,23,42,0.5);">
+          <img id="panduanImage" style="max-width:100%;display:block;cursor:zoom-in;transition:transform .3s ease;" alt="Panduan Betting" />
+        </div>
+        <button class="btn btn-primary" id="copyPanduanBtn" style="padding:10px 28px;font-size:14px;font-weight:700;border-radius:8px;display:inline-flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px;">
+          <i class="fas fa-copy"></i> <span id="copyBtnText">Salin Gambar</span>
+        </button>
+        <div style="margin-top:12px;color:#6b7280;font-size:12px;">Klik gambar untuk memperbesar | Scroll atau gunakan zoom</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="text-align:center;margin-bottom:18px;">
+        <h2 style="font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#818cf8;text-shadow:0 0 20px rgba(129,140,248,0.3);">⚽ Cara Betting Bola</h2>
+        <div style="font-size:13px;color:#6b7280;margin-top:4px;">Panduan lengkap cara melakukan betting bola online</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.15);color:#a5b4fc;padding:10px 16px;margin-bottom:18px;border-radius:8px;font-weight:700;text-align:center;font-size:13px;text-transform:uppercase;overflow:hidden;white-space:nowrap;">
+        <span style="display:inline-block;animation:marquee 15s linear infinite;padding-left:100%;">PANDUAN BETTING BOLA | HANDICAP • OVER/UNDER • 1X2 • MONEYLINE</span>
+      </div>
+      <div id="bola-tabs" style="display:flex;gap:0;overflow-x:auto;margin-bottom:0;border-bottom:2px solid rgba(99,102,241,0.15);">
+        <button class="bola-tab-item active" data-tab="hcp" style="padding:10px 20px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600;transition:all var(--transition);position:relative;white-space:nowrap;letter-spacing:.3px;">Handicap</button>
+        <button class="bola-tab-item" data-tab="ou" style="padding:10px 20px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600;transition:all var(--transition);position:relative;white-space:nowrap;letter-spacing:.3px;">Besar/Kecil</button>
+        <button class="bola-tab-item" data-tab="ox2" style="padding:10px 20px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600;transition:all var(--transition);position:relative;white-space:nowrap;letter-spacing:.3px;">1X2</button>
+        <button class="bola-tab-item" data-tab="ml" style="padding:10px 20px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:600;transition:all var(--transition);position:relative;white-space:nowrap;letter-spacing:.3px;">Moneyline</button>
+      </div>
+      <div id="bola-content" style="border-radius:0 0 12px 12px;border:1px solid rgba(99,102,241,0.15);border-top:none;overflow:hidden;">
+
+        <div class="bola-panel active" data-panel="hcp" style="padding:20px;background:rgba(11,15,26,0.5);">
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="display:inline-block;padding:6px 18px;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(99,102,241,0.05));border:1px solid rgba(99,102,241,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#818cf8;letter-spacing:1px;text-transform:uppercase;">PANDUAN HANDICAP (HDP)</div>
+          </div>
+          <div style="font-size:13px;color:#e2e8f0;line-height:1.8;">
+            <div style="margin-bottom:14px;padding:14px;background:rgba(99,102,241,0.04);border-left:3px solid #818cf8;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#818cf8;margin-bottom:6px;font-size:12px;">📖 Pengertian</div>
+              <div style="color:#94a3b8;">Handicap adalah sistem taruhan di mana tim yang diunggulkan memberikan <strong style="color:#e2e8f0;">fur/voran</strong> kepada tim yang lebih lemah. Nilai fur bervariasi seperti 0.5, 1, 1.5, dst.</div>
+            </div>
+            <div style="margin-bottom:14px;padding:14px;background:rgba(34,197,94,0.04);border-left:3px solid #22c55e;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#22c55e;margin-bottom:6px;font-size:12px;">✅ Contoh Taruhan — Rp100,000</div>
+              <div style="color:#94a3b8;">
+                <strong style="color:#e2e8f0;">Real Madrid -1.5 vs Barcelona</strong><br>
+                Real Madrid harus menang selisih 2 gol atau lebih.<br>
+                Jika bet Rp100.000 pada Real Madrid -1.5 (odds 1.90):<br>
+                <span style="color:#86efac;">► Menang: Rp100.000 × 1.90 = <strong>Rp190.000</strong></span><br>
+                <span style="color:#fca5a5;">► Kalah: Rp100.000 (jika Real Madrid menang 1 gol / imbang / kalah)</span>
+              </div>
+            </div>
+            <div style="padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">💡 Tips</div>
+              <div style="color:#94a3b8;">Perhatikan kondisi tim, head-to-head, dan fur yang diberikan. Jika fur terlalu besar, pertimbangkan untuk bet di sisi yang diunggulkan.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bola-panel" data-panel="ou" style="display:none;padding:20px;background:rgba(11,15,26,0.5);">
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="display:inline-block;padding:6px 18px;background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1px solid rgba(34,197,94,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#22c55e;letter-spacing:1px;text-transform:uppercase;">PANDUAN OVER/UNDER (OU)</div>
+          </div>
+          <div style="font-size:13px;color:#e2e8f0;line-height:1.8;">
+            <div style="margin-bottom:14px;padding:14px;background:rgba(34,197,94,0.04);border-left:3px solid #22c55e;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#22c55e;margin-bottom:6px;font-size:12px;">📖 Pengertian</div>
+              <div style="color:#94a3b8;">Over/Under adalah taruhan menebak jumlah gol <strong style="color:#e2e8f0;">lebih (Over) atau kurang (Under)</strong> dari pasaran yang ditentukan. Contoh: Over/Under 2.5 gol.</div>
+            </div>
+            <div style="margin-bottom:14px;padding:14px;background:rgba(34,197,94,0.04);border-left:3px solid #22c55e;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#22c55e;margin-bottom:6px;font-size:12px;">✅ Contoh Taruhan — Rp100,000</div>
+              <div style="color:#94a3b8;">
+                <strong style="color:#e2e8f0;">Liverpool vs Chelsea — Over/Under 2.5</strong><br>
+                Pasaran menetapkan garis 2.5 gol.<br>
+                Jika bet Rp100.000 pada Over 2.5 (odds 1.85):<br>
+                <span style="color:#86efac;">► Menang: minimal 3 gol tercipta. Rp100.000 × 1.85 = <strong>Rp185.000</strong></span><br>
+                <span style="color:#fca5a5;">► Kalah: 2 gol atau kurang = kehilangan Rp100.000</span>
+              </div>
+            </div>
+            <div style="padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">💡 Tips</div>
+              <div style="color:#94a3b8;">Lihat rata-rata gol kedua tim. Jika kedua tim memiliki pertahanan kuat, pertimbangkan Under. Jika kedua tim agresif, Over lebih masuk akal.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bola-panel" data-panel="ox2" style="display:none;padding:20px;background:rgba(11,15,26,0.5);">
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="display:inline-block;padding:6px 18px;background:linear-gradient(135deg,rgba(56,189,248,0.15),rgba(56,189,248,0.05));border:1px solid rgba(56,189,248,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#38bdf8;letter-spacing:1px;text-transform:uppercase;">PANDUAN 1X2</div>
+          </div>
+          <div style="font-size:13px;color:#e2e8f0;line-height:1.8;">
+            <div style="margin-bottom:14px;padding:14px;background:rgba(56,189,248,0.04);border-left:3px solid #38bdf8;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#38bdf8;margin-bottom:6px;font-size:12px;">📖 Pengertian</div>
+              <div style="color:#94a3b8;">1X2 adalah taruhan memilih hasil akhir pertandingan:<br>
+              <strong style="color:#86efac;">1</strong> = Home Menang &nbsp;|&nbsp; <strong style="color:#fbbf24;">X</strong> = Seri &nbsp;|&nbsp; <strong style="color:#fca5a5;">2</strong> = Away Menang<br>
+              Tidak ada fur, murni menebak siapa pemenangnya.</div>
+            </div>
+            <div style="margin-bottom:14px;padding:14px;background:rgba(56,189,248,0.04);border-left:3px solid #38bdf8;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#38bdf8;margin-bottom:6px;font-size:12px;">✅ Contoh Taruhan — Rp100,000</div>
+              <div style="color:#94a3b8;">
+                <strong style="color:#e2e8f0;">Bayern Munich vs Dortmund</strong><br>
+                Odds: 1 = 1.60 &nbsp;|&nbsp; X = 4.20 &nbsp;|&nbsp; 2 = 5.50<br>
+                Jika bet Rp100.000 pada <strong style="color:#86efac;">1 (Bayern Menang)</strong> odds 1.60:<br>
+                <span style="color:#86efac;">► Menang: Rp100.000 × 1.60 = <strong>Rp160.000</strong></span><br>
+                <span style="color:#fca5a5;">► Kalah: jika Bayern seri atau kalah</span>
+              </div>
+            </div>
+            <div style="padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">💡 Tips</div>
+              <div style="color:#94a3b8;">Odds rendah = peluang menang tinggi tapi keuntungan kecil. Odds tinggi = peluang kecil tapi hasil besar. Sesuaikan dengan analisis Anda.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bola-panel" data-panel="ml" style="display:none;padding:20px;background:rgba(11,15,26,0.5);">
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="display:inline-block;padding:6px 18px;background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;">PANDUAN MONEYLINE (ML)</div>
+          </div>
+          <div style="font-size:13px;color:#e2e8f0;line-height:1.8;">
+            <div style="margin-bottom:14px;padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">📖 Pengertian</div>
+              <div style="color:#94a3b8;">Moneyline adalah taruhan pemenang langsung tanpa handicap. Cocok untuk pertandingan dengan <strong style="color:#e2e8f0;">selisih kekuatan jelas</strong> antara kedua tim.</div>
+            </div>
+            <div style="margin-bottom:14px;padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">✅ Contoh Taruhan — Rp100,000</div>
+              <div style="color:#94a3b8;">
+                <strong style="color:#e2e8f0;">Manchester City vs Bournemouth</strong><br>
+                Moneyline: City 1.15 &nbsp;|&nbsp; Bournemouth 15.00<br>
+                Jika bet Rp100.000 pada <strong style="color:#86efac;">Manchester City</strong> odds 1.15:<br>
+                <span style="color:#86efac;">► Menang: Rp100.000 × 1.15 = <strong>Rp115.000</strong> (untung Rp15.000)</span><br>
+                <span style="color:#fca5a5;">► Kalah: jika City seri atau kalah</span><br><br>
+                Jika bet Rp100.000 pada <strong style="color:#fca5a5;">Bournemouth</strong> odds 15.00:<br>
+                <span style="color:#86efac;">► Menang: Rp100.000 × 15.00 = <strong>Rp1.500.000</strong></span><br>
+                <span style="color:#fca5a5;">► Kalah: jika Bournemouth seri atau kalah</span>
+              </div>
+            </div>
+            <div style="padding:14px;background:rgba(245,158,11,0.04);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;">
+              <div style="font-weight:700;color:#f59e0b;margin-bottom:6px;font-size:12px;">💡 Tips</div>
+              <div style="color:#94a3b8;">Moneyline cocok untuk underdog big match. Odds tinggi pada tim lemah bisa menguntungkan jika ada peluang kejutan.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-prediksi">
+    <div class="card">
+      <div style="text-align:center;margin-bottom:18px;">
+        <h2 style="font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#818cf8;text-shadow:0 0 20px rgba(129,140,248,0.3);">Generator Prediksi Togel</h2>
+        <div style="font-size:13px;color:#6b7280;margin-top:4px;">Hasilkan angka keberuntungan Anda untuk berbagai pasaran togel</div>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.03));border:1px solid rgba(99,102,241,0.15);color:#a5b4fc;padding:10px 16px;margin-bottom:18px;border-radius:8px;font-weight:700;text-align:center;font-size:13px;text-transform:uppercase;overflow:hidden;white-space:nowrap;">
+        <span style="display:inline-block;animation:marquee 15s linear infinite;padding-left:100%;">SELAMAT DATANG DI PREDIKSI TOGEL | GENERATOR ANGKA KEBERUNTUNGAN ANDA</span>
+      </div>
+      <div class="prediksi-box">
+        <div class="prediksi-control-title">Pilih Pasaran Togel</div>
+        <div class="prediksi-form-group">
+          <select id="prediksiPasaran" class="prediksi-select">
+            <option value="">-- Pilih Pasaran Togel --</option>
+            <option value="HOKI DRAW">HOKI DRAW</option>
+            <option value="BANGKOK 0130">BANGKOK 0130</option>
+            <option value="BANGKOK 0930">BANGKOK 0930</option>
+            <option value="BRUNEI 02">BRUNEI 02</option>
+            <option value="BRUNEI 14">BRUNEI 14</option>
+            <option value="BRUNEI 21">BRUNEI 21</option>
+            <option value="BULLSEYE">BULLSEYE</option>
+            <option value="CALIFORNIA">CALIFORNIA</option>
+            <option value="CAROLINADAY">CAROLINADAY</option>
+            <option value="CAROLINAEVE">CAROLINAEVE</option>
+            <option value="CHELSEA 11">CHELSEA 11</option>
+            <option value="CHELSEA 15">CHELSEA 15</option>
+            <option value="CHELSEA 19">CHELSEA 19</option>
+            <option value="CHELSEA 21">CHELSEA 21</option>
+            <option value="FLORIDAEVE">FLORIDAEVE</option>
+            <option value="FLORIDAMID">FLORIDAMID</option>
+            <option value="HONGKONG LOTTO">HONGKONG LOTTO</option>
+            <option value="HUAHIN 0100">HUAHIN 0100</option>
+            <option value="HUAHIN 1630">HUAHIN 1630</option>
+            <option value="HUAHIN 2100">HUAHIN 2100</option>
+            <option value="KENTUCKYEVE">KENTUCKYEVE</option>
+            <option value="KENTUCKYMID">KENTUCKYMID</option>
+            <option value="KING KONG4D SORE">KING KONG4D SORE</option>
+            <option value="KING KONG4D MALAM">KING KONG4D MALAM</option>
+            <option value="MAGNUM4D">MAGNUM4D</option>
+            <option value="NEVADA">NEVADA</option>
+            <option value="NEWYORKEVE">NEWYORKEVE</option>
+            <option value="NEWYORKMID">NEWYORKMID</option>
+            <option value="OREGON03">OREGON03</option>
+            <option value="OREGON06">OREGON06</option>
+            <option value="OREGON09">OREGON09</option>
+            <option value="OREGON12">OREGON12</option>
+            <option value="PCSO">PCSO</option>
+            <option value="POIPET12">POIPET12</option>
+            <option value="POIPET15">POIPET15</option>
+            <option value="POIPET19">POIPET19</option>
+            <option value="POIPET22">POIPET22</option>
+            <option value="SINGAPORE">SINGAPORE</option>
+            <option value="SYDNEY LOTTO">SYDNEY LOTTO</option>
+            <option value="TOTOCAMBODIA">TOTOCAMBODIA</option>
+            <option value="TOTOMALI1530">TOTOMALI1530</option>
+            <option value="TOTOMALI2030">TOTOMALI2030</option>
+            <option value="TOTOMALI2330">TOTOMALI2330</option>
+            <option value="TOTOMACAU PAGI">TOTOMACAU PAGI</option>
+            <option value="TOTOMACAU SIANG">TOTOMACAU SIANG</option>
+            <option value="TOTOMACAU SORE">TOTOMACAU SORE</option>
+            <option value="TOTOMACAU MALAM I">TOTOMACAU MALAM I</option>
+            <option value="TOTOMACAU MALAM II">TOTOMACAU MALAM II</option>
+            <option value="TOTOMACAU MALAM III">TOTOMACAU MALAM III</option>
+          </select>
+          <button class="btn btn-primary" id="generatePrediksiBtn" style="padding:12px 28px;font-size:14px;font-weight:700;border-radius:8px;text-transform:uppercase;letter-spacing:1px;margin-top:12px;box-shadow:0 0 20px rgba(99,102,241,0.3);">
+            <i class="fas fa-dice"></i> Generate Prediksi
+          </button>
+        </div>
+      </div>
+      <div id="prediksiWelcome" class="prediksi-welcome">
+        <h3 style="background:linear-gradient(45deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:18px;margin-bottom:12px;">Selamat Datang di Generator Prediksi</h3>
+        <p style="color:#6b7280;font-size:13px;max-width:500px;margin:0 auto;">Silakan pilih pasaran togel yang Anda inginkan dari dropdown di atas, kemudian klik tombol "Generate Prediksi" untuk mendapatkan angka keberuntungan Anda hari ini.</p>
+      </div>
+      <div id="prediksiResults" class="prediksi-results" style="display:none;">
+        <div id="prediksiCaptureArea">
+          <div style="text-align:center;margin-bottom:16px;">
+            <h3 style="background:linear-gradient(45deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:16px;">Hasil Prediksi</h3>
+          </div>
+          <div id="prediksiImageContainer" class="prediksi-image-container"></div>
+          <div class="table-scroll" id="prediksiTableWrapper"></div>
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn btn-primary" id="copyPrediksiBtn" style="padding:10px 24px;font-size:13px;font-weight:700;border-radius:8px;display:inline-flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.5px;">
+            <i class="fas fa-copy"></i> <span id="copyPrediksiText">Salin Gambar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-parlay">
+    <style>
+      #pane-parlay * { box-sizing: border-box; }
+      #pane-parlay { color: var(--text-primary); font-family: 'Segoe UI', system-ui, sans-serif; }
+      #pane-parlay .pp-title { font-size:1.6rem; font-weight:800; text-align:center; margin:0 0 6px; background:linear-gradient(135deg,var(--primary),#38bdf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:1px; }
+      #pane-parlay .pp-hr { border:none; border-top:1px solid var(--border-accent); margin:0 0 18px; }
+      #pane-parlay .pp-card { background:var(--bg-card); border:1px solid var(--border-accent); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); margin-bottom:16px; overflow:hidden; }
+      #pane-parlay .pp-head { background:linear-gradient(180deg,rgba(99,102,241,0.12) 0%,rgba(99,102,241,0.03) 100%); border-bottom:1px solid var(--border-accent); padding:20px; }
+      #pane-parlay .pp-body { background:rgba(12,15,28,0.6); padding:20px; }
+      #pane-parlay .pp-toprow { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+      #pane-parlay .pp-lbl { display:block; font-weight:600; color:var(--primary); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px; }
+      #pane-parlay .pp-input { display:block; width:100%; background:rgba(15,23,42,0.7); border:1px solid var(--border-accent); color:var(--text-primary); border-radius:var(--radius-sm); padding:7px 11px; font-family:inherit; font-size:0.92rem; outline:none; }
+      #pane-parlay .pp-input:focus { border-color:var(--primary); box-shadow:0 0 0 2px rgba(129,140,248,0.2); }
+      #pane-parlay .pp-results { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-top:16px; }
+      #pane-parlay .pp-res-label { font-size:0.65rem; color:var(--primary); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-bottom:4px; }
+      #pane-parlay .pp-res-card { background:linear-gradient(135deg,var(--bg-deep) 0%,rgba(99,102,241,0.08) 50%,var(--bg-deep) 100%); border:1px solid rgba(129,140,248,0.4); border-radius:var(--radius); padding:12px 22px; box-shadow:0 0 20px rgba(129,140,248,0.12); min-width:130px; text-align:center; animation:ppGlow 4s ease-in-out infinite; }
+      @keyframes ppGlow { 0%,100%{box-shadow:0 0 14px rgba(129,140,248,0.12)} 50%{box-shadow:0 0 28px rgba(129,140,248,0.25)} }
+      #pane-parlay .pp-res-val { font-size:1.25rem; font-weight:700; background:linear-gradient(90deg,var(--primary-deep) 0%,#38bdf8 40%,var(--primary) 60%,var(--primary-deep) 100%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:ppShine 3s linear infinite; }
+      @keyframes ppShine { 0%{background-position:0% center} 100%{background-position:200% center} }
+      #pane-parlay .pp-row { background:rgba(12,15,28,0.5); border:1px solid var(--border-accent); border-radius:var(--radius); padding:14px; margin-bottom:12px; display:flex; flex-wrap:wrap; align-items:flex-start; }
+      #pane-parlay .pp-row:hover { border-color:rgba(129,140,248,0.3); }
+      #pane-parlay .pp-col-del { padding-right:12px; border-right:1px solid var(--border-accent); margin-right:12px; padding-top:4px; }
+      #pane-parlay .pp-col-odds { padding:0 12px; border-right:1px solid var(--border-accent); margin-right:12px; min-width:165px; }
+      #pane-parlay .pp-col-hasil { flex:1; min-width:200px; padding-left:4px; }
+      #pane-parlay .pp-btn-del { background:linear-gradient(135deg,#C0392B,#922B21); border:none; color:#FFD0CC; border-radius:6px; padding:7px 11px; cursor:pointer; font-size:0.85rem; font-weight:600; }
+      #pane-parlay .pp-btn-del:hover { opacity:0.85; }
+      #pane-parlay .pp-btn-add { background:linear-gradient(135deg,var(--primary-deep),var(--primary)); border:none; color:#fff; border-radius:var(--radius-sm); padding:7px 14px; cursor:pointer; font-size:0.85rem; font-weight:600; box-shadow:0 2px 12px rgba(99,102,241,0.35); }
+      #pane-parlay .pp-btn-add:hover { opacity:0.9; }
+      #pane-parlay .pp-btn-info { background:rgba(99,102,241,0.1); border:1px solid rgba(129,140,248,0.25); color:var(--primary); border-radius:6px; padding:6px 13px; cursor:pointer; font-size:0.82rem; font-weight:600; }
+      #pane-parlay .pp-btn-info:hover { background:rgba(99,102,241,0.2); }
+      #pane-parlay .pp-radio-wrap { display:flex; flex-wrap:wrap; gap:0; margin-top:6px; }
+      #pane-parlay .pp-radio { display:inline-flex; align-items:center; margin-right:8px; margin-bottom:6px; cursor:pointer; padding:6px 14px; border-radius:20px; border:1px solid rgba(129,140,248,0.2); background:rgba(99,102,241,0.05); font-size:0.82rem; color:var(--text-primary); white-space:nowrap; transition:background 0.15s,border-color 0.15s; }
+      #pane-parlay .pp-radio:hover { background:rgba(99,102,241,0.15); border-color:rgba(129,140,248,0.45); }
+      #pane-parlay .pp-radio input[type="radio"] { margin-right:5px; accent-color:var(--primary); }
+      #pane-parlay .pp-odds-info { color:rgba(129,140,248,0.7); font-size:0.78rem; margin-top:5px; }
+      #pane-parlay .pp-odds-info strong { color:var(--primary); }
+      #pane-parlay .pp-panel { background:rgba(99,102,241,0.06); border-left:3px solid var(--primary); border-radius:0 6px 6px 0; color:var(--text-primary); padding:12px 15px; font-size:0.82rem; margin-bottom:8px; line-height:1.7; }
+      #pane-parlay .pp-divrow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+      @media(max-width:600px){
+        #pane-parlay .pp-col-del, #pane-parlay .pp-col-odds { border-right:none; border-bottom:1px solid var(--border-accent); padding-bottom:10px; margin-bottom:10px; margin-right:0; width:100%; }
+      }
+    </style>
+    <div class="pp-title"><i class="fas fa-calculator"></i> Kalkulator Parlay (<span id="pp-count">0</span> Partai)</div>
+    <hr class="pp-hr" />
+    <div class="pp-card">
+      <div class="pp-head">
+        <div class="pp-toprow">
+          <button class="pp-btn-add" id="pp-tambah"><i class="fas fa-plus"></i> Tambah Team</button>
+        </div>
+        <div style="max-width:280px;margin-bottom:4px;">
+          <span class="pp-lbl"><i class="fas fa-money-bill-wave"></i> Nilai Bet</span>
+          <input type="number" class="pp-input" id="pp-bet" value="10000" min="1" />
+        </div>
+        <div class="pp-results">
+          <div>
+            <div class="pp-res-label"><i class="fas fa-percentage"></i> Hasil Odds</div>
+            <div class="pp-res-card"><span class="pp-res-val" id="pp-odds-display">1.00</span></div>
+          </div>
+          <div>
+            <div class="pp-res-label"><i class="fas fa-trophy"></i> Hasil Akhir</div>
+            <div class="pp-res-card"><span class="pp-res-val" id="pp-hasil-display">0.00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="pp-body">
+        <div id="pp-list"></div>
+        <hr style="border:none;border-top:1px solid var(--border-accent);margin:20px 0;" />
+        <div class="pp-divrow">
+          <button class="pp-btn-info" id="pp-catatan-btn"><i class="fas fa-sticky-note"></i> Catatan</button>
+          <button class="pp-btn-info" id="pp-rumus-btn"><i class="fas fa-square-root-alt"></i> Rumus Mix Parlay</button>
+        </div>
+        <div id="pp-catatan" class="pp-panel"><strong><i class="fas fa-info-circle"></i> Catatan:</strong><br />- Menang Full = Odds<br />- Menang Setengah = ((Odds - 1) / 2) + 1<br />- Kalah Setengah = 0.5<br />- Seri = 1</div>
+        <div id="pp-rumus" class="pp-panel"><strong><i class="fas fa-calculator"></i> Rumus Mix Parlay:</strong><br />(Hasil Perkalian Odds &times; Jumlah Bet) - Jumlah Bet<br /><i>- Jika hasil minus, Anda kalah sebesar hasil tersebut.<br />- Jika plus, itu adalah keuntungan Anda.</i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-hadiah">
+    <style>
+      #pane-hadiah * { box-sizing: border-box; }
+      #pane-hadiah { color: var(--text-primary); font-family: 'Segoe UI', system-ui, sans-serif; }
+      #pane-hadiah .ph-title { font-size:1.6rem; font-weight:800; text-align:center; margin:0 0 6px; background:linear-gradient(135deg,var(--primary),#38bdf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:1px; }
+      #pane-hadiah .ph-hr { border:none;border-top:1px solid var(--border-accent);margin:0 0 18px; }
+      #pane-hadiah .ph-bar { position:sticky; top:0; z-index:100; background:rgba(8,11,20,0.96); border-radius:var(--radius); box-shadow:0 2px 4px rgba(0,0,0,0.6),0 0 25px rgba(99,102,241,0.2); backdrop-filter:blur(12px); padding:12px 0; border:1px solid var(--border-accent); margin-bottom:16px; }
+      #pane-hadiah .ph-bar-inner { display:flex; flex-direction:row; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap; }
+      #pane-hadiah .ph-bar-title { font-weight:700; letter-spacing:.3px; color:var(--primary); font-size:15px; }
+      #pane-hadiah .ph-select { height:40px; border-radius:var(--radius-sm); border:2px solid var(--border-focus); background:rgba(15,23,42,0.9); color:var(--text-primary); padding:0 14px; font-weight:600; letter-spacing:.25px; outline:none; text-transform:uppercase; width:100%; max-width:300px; cursor:pointer; transition:all 0.3s ease; }
+      #pane-hadiah .ph-select:focus { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+      #pane-hadiah .ph-line { width:100%; height:2px; background:linear-gradient(90deg,transparent,var(--primary-deep),var(--primary),var(--primary-deep),transparent); margin:10px 0 0; border-radius:2px; }
+      #pane-hadiah .ph-info { margin:14px 0; display:flex; justify-content:center; }
+      #pane-hadiah .ph-market-box { display:inline-flex; align-items:center; gap:12px; background:rgba(8,11,20,0.9); border:1px solid var(--border-accent); color:var(--primary); padding:6px 18px; border-radius:var(--radius); font-weight:700; letter-spacing:.2px; text-transform:uppercase; font-size:13px; box-shadow:0 4px 15px rgba(99,102,241,0.2); }
+      #pane-hadiah .ph-market-logo { width:140px; height:40px; object-fit:contain; background:rgba(8,11,20,0.8); padding:3px; border-radius:4px; display:block; }
+      #pane-hadiah .ph-tabs { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:16px; }
+      #pane-hadiah .ph-tab { appearance:none; border-radius:999px; padding:8px 16px; font-weight:700; cursor:pointer; text-transform:uppercase; background:rgba(15,23,42,0.8); color:var(--text-secondary); border:1px solid var(--border-accent); transition:all 0.2s ease; font-size:12px; }
+      #pane-hadiah .ph-tab:hover { color:var(--text-primary); border-color:var(--primary); }
+      #pane-hadiah .ph-tab.active { background:linear-gradient(135deg,var(--primary-deep),var(--primary)); color:#fff; border-color:var(--primary); box-shadow:0 2px 12px rgba(99,102,241,0.4); }
+      #pane-hadiah .ph-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:30px; }
+      #pane-hadiah .ph-card { background:var(--bg-card); backdrop-filter:blur(6px); border:1px solid var(--border-accent); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); padding:16px; display:flex; flex-direction:column; gap:12px; transition:all 0.2s ease; position:relative; overflow:hidden; }
+      #pane-hadiah .ph-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-card),var(--shadow-glow); border-color:rgba(99,102,241,0.3); }
+      #pane-hadiah .ph-card h3 { margin:0; font-size:14px; letter-spacing:.3px; text-transform:uppercase; border-bottom:1px solid var(--border-accent); padding-bottom:8px; text-align:center; color:var(--text-primary); font-weight:600; }
+      #pane-hadiah .ph-meta { font-weight:600; color:var(--text-secondary); text-align:center; font-size:13px; }
+      #pane-hadiah .ph-row { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+      #pane-hadiah .ph-row input { width:100%; border-radius:var(--radius-sm); border:1px solid var(--border-accent); background:rgba(15,23,42,0.7); color:var(--text-primary); height:40px; padding:8px 12px; font-weight:600; text-align:center; outline:none; font-size:13px; transition:all 0.2s ease; }
+      #pane-hadiah .ph-row input:focus { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+      #pane-hadiah .ph-row input::placeholder { color:var(--text-muted); opacity:.8; }
+      #pane-hadiah .ph-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+      #pane-hadiah .ph-btn { height:38px; border-radius:var(--radius-sm); border:0; font-weight:700; color:#fff; cursor:pointer; padding:0 12px; width:100%; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; }
+      #pane-hadiah .ph-btn:hover { filter:brightness(1.12); transform:translateY(-1px); }
+      #pane-hadiah .ph-btn:active { transform:translateY(1px); }
+      #pane-hadiah .ph-hitung { background:linear-gradient(180deg,var(--primary-deep),var(--primary)); box-shadow:0 2px 8px rgba(99,102,241,0.35); }
+      #pane-hadiah .ph-reset { background:linear-gradient(135deg,#C0392B,#922B21); box-shadow:0 2px 8px rgba(239,68,68,0.25); }
+      #pane-hadiah .ph-out { display:none; grid-template-columns:1fr; gap:8px; margin-top:10px; }
+      #pane-hadiah .ph-out.show { display:grid; }
+      #pane-hadiah .ph-pill { border:1px solid var(--border-accent); border-radius:var(--radius-sm); padding:10px; text-align:center; font-weight:600; background:rgba(8,11,20,0.6); font-size:13px; line-height:1.4; }
+      #pane-hadiah .ph-pay { color:var(--primary); }
+      #pane-hadiah .ph-win { color:#7dd3fc; }
+      #pane-hadiah .ph-sum { color:#a5b4fc; }
+      #pane-hadiah .ph-min { color:var(--text-muted); }
+      #pane-hadiah .ph-divider { grid-column:1/-1; display:flex; align-items:center; gap:10px; margin:20px 0 12px; }
+      #pane-hadiah .ph-divider:before, #pane-hadiah .ph-divider:after { content:""; flex:1000; border-bottom:1px solid var(--border-accent); }
+      #pane-hadiah .ph-divider-label { display:inline-block; padding:6px 16px; border:1px solid var(--border-focus); border-radius:var(--radius); background:rgba(15,23,42,0.9); color:var(--primary); font-weight:700; font-size:15px; letter-spacing:.3px; line-height:1; white-space:nowrap; }
+      #pane-hadiah .ph-empty { margin:20px auto; padding:20px; color:var(--text-muted); text-align:center; border:2px dashed var(--border-accent); border-radius:var(--radius-lg); background:rgba(8,11,20,0.6); font-size:15px; font-weight:600; }
+      #pane-hadiah .ph-calc-table { margin-top:10px; background:rgba(8,11,20,0.7); border:1px solid var(--border-accent); border-radius:var(--radius-sm); padding:12px; font-size:13px; display:none; }
+      #pane-hadiah .ph-calc-table.show { display:block; }
+      #pane-hadiah .ph-calc-table h4 { color:var(--primary); margin:0 0 8px; font-size:13px; text-align:center; font-weight:700; }
+      #pane-hadiah .ph-calc-step { margin:6px 0; color:var(--text-secondary); line-height:1.4; font-size:12px; }
+      #pane-hadiah .ph-calc-step .formula { color:var(--primary); font-family:'Courier New',monospace; font-weight:600; }
+      #pane-hadiah .ph-calc-step .result { color:#a5b4fc; font-weight:700; }
+      @media(max-width:768px){
+        #pane-hadiah .ph-grid { grid-template-columns:1fr; }
+        #pane-hadiah .ph-bar-inner { flex-direction:column; gap:10px; }
+        #pane-hadiah .ph-select { max-width:100%; }
+        #pane-hadiah .ph-actions { grid-template-columns:1fr; }
+        #pane-hadiah .ph-market-box { flex-direction:column; text-align:center; }
+      }
+    </style>
+    <div class="ph-title"><i class="fas fa-calculator"></i> Kalkulator Hadiah Togel</div>
+    <hr class="ph-hr" />
+    <div class="ph-bar"><div class="ph-bar-inner">
+      <div class="ph-bar-title"><i class="fas fa-list-ul"></i> PILIH PASARAN TOGEL:</div>
+      <select id="ph-sel" class="ph-select" aria-label="Pilih pasaran">
+        <option value="" disabled selected>PILIH PASARAN</option>
+      </select>
+    </div><div class="ph-line"></div></div>
+    <div id="ph-info" class="ph-info"></div>
+    <div class="ph-tabs" id="ph-tabs"></div>
+    <div id="ph-grid" class="ph-grid"></div>
+    <div id="ph-empty" class="ph-empty" style="display:none;">Silakan pilih pasaran terlebih dahulu.</div>
+  </div>
+
+  <div class="tab-pane" id="pane-jadwal">
+    <style>
+      #pane-jadwal * { margin:0;padding:0;box-sizing:border-box; }
+      #pane-jadwal { color:var(--text-primary);font-family:'Segoe UI',system-ui,sans-serif; }
+      #pane-jadwal .pj-title { font-size:1.6rem;font-weight:800;text-align:center;margin:0 0 6px;background:linear-gradient(135deg,var(--primary),#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px; }
+      #pane-jadwal .pj-hr { border:none;border-top:1px solid var(--border-accent);margin:0 0 18px; }
+      #pane-jadwal .pj-subtitle { text-align:center;color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px; }
+      #pane-jadwal .pj-wrap { max-width:1400px;margin:0 auto; }
+      #pane-jadwal .pj-search { max-width:500px;margin:0 auto 20px;position:relative; }
+      #pane-jadwal .pj-search input { width:100%;padding:12px 16px 12px 42px;background:rgba(15,23,42,0.7);border:1px solid var(--border-accent);border-radius:var(--radius);color:var(--text-primary);font-size:0.95rem;outline:none;transition:all .2s; }
+      #pane-jadwal .pj-search input:focus { border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow); }
+      #pane-jadwal .pj-search input::placeholder { color:var(--text-muted); }
+      #pane-jadwal .pj-search i { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--primary); }
+      #pane-jadwal .pj-search-results { text-align:center;font-size:0.85rem;color:var(--text-secondary);margin-top:6px; }
+      #pane-jadwal .pj-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;padding:0 0 20px; }
+      #pane-jadwal .pj-card { background:var(--bg-card);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-card);transition:all .25s ease;border:1px solid var(--border-accent);position:relative; }
+      #pane-jadwal .pj-card::before { content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(135deg,var(--primary-deep),var(--primary));z-index:1; }
+      #pane-jadwal .pj-card:hover { transform:translateY(-4px);box-shadow:var(--shadow-card),var(--shadow-glow);border-color:rgba(99,102,241,0.35); }
+      #pane-jadwal .pj-card-title { font-size:1.1rem;font-weight:700;padding:16px 18px;background:rgba(99,102,241,0.08);border-bottom:1px solid var(--border-accent);color:var(--primary);text-align:center;letter-spacing:0.5px; }
+      #pane-jadwal .pj-card-row { display:flex;justify-content:space-between;align-items:center;padding:11px 18px;border-bottom:1px solid rgba(255,255,255,0.03); }
+      #pane-jadwal .pj-card-row:last-child { border-bottom:none; }
+      #pane-jadwal .pj-label { display:flex;align-items:center;color:var(--text-secondary);font-size:0.88rem;font-weight:500; }
+      #pane-jadwal .pj-label i { width:16px;margin-right:8px;color:var(--primary);opacity:0.8;font-size:0.85rem; }
+      #pane-jadwal .pj-value { font-weight:600;color:var(--text-primary);text-align:right;font-size:0.88rem; }
+      #pane-jadwal .pj-tutup { color:#f59e0b;font-weight:700; }
+      #pane-jadwal .pj-buka { color:#22c55e;font-weight:700; }
+      #pane-jadwal .pj-status { font-weight:700; }
+      #pane-jadwal .pj-status.OPEN { color:#22c55e; }
+      #pane-jadwal .pj-status.CLOSED { color:#ef4444; }
+      #pane-jadwal .pj-status.LIVE { color:var(--primary); }
+      #pane-jadwal .pj-countdown { font-family:'Consolas',monospace;font-weight:700;color:var(--text-primary); }
+      #pane-jadwal .pj-progress { height:4px;background:rgba(255,255,255,0.04);margin:0 18px 12px;border-radius:4px;overflow:hidden; }
+      #pane-jadwal .pj-progress-bar { height:100%;width:0%;background:linear-gradient(135deg,var(--primary-deep),var(--primary));transition:width .5s linear; }
+      #pane-jadwal .pj-links { padding:14px 18px;text-align:center;background:rgba(0,0,0,0.2);border-top:1px solid var(--border-accent);display:flex;gap:8px;justify-content:center;flex-wrap:wrap; }
+      #pane-jadwal .pj-links a { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;text-decoration:none;border-radius:var(--radius-sm);font-weight:600;font-size:0.82rem;transition:all .2s; }
+      #pane-jadwal .pj-links a:hover { filter:brightness(1.12);transform:translateY(-1px); }
+      #pane-jadwal .pj-noresults { grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:1rem;background:var(--bg-card);border-radius:var(--radius-lg);border:2px dashed var(--border-accent); }
+      @media(max-width:768px){
+        #pane-jadwal .pj-grid { grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px; }
+        #pane-jadwal .pj-links { flex-direction:column; }
+        #pane-jadwal .pj-links a { width:100%;justify-content:center; }
+      }
+    </style>
+    <div class="pj-title"><i class="fas fa-calendar-alt"></i> Jadwal Togel</div>
+    <div class="pj-subtitle">Jadwal lengkap togel online</div>
+    <hr class="pj-hr" />
+    <div class="pj-search">
+      <i class="fas fa-search"></i>
+      <input type="text" id="pj-search" placeholder="Cari nama pasaran togel..." />
+      <div class="pj-search-results" id="pj-search-results"></div>
+    </div>
+    <div class="pj-wrap"><div class="pj-grid" id="pj-grid"></div></div>
+  </div>
+
+  <div class="tab-pane" id="pane-generator-bola">
+    <style>
+      #pane-generator-bola { --gb-p:#10B981; --gb-g:#F59E0B; --gb-bg:#060b14; --gb-card:rgba(16,185,129,0.06); --gb-border:rgba(16,185,129,0.15); --gb-glow:rgba(16,185,129,0.2); }
+      #pane-generator-bola * { box-sizing:border-box; }
+      #pane-generator-bola .gb-hero { background:linear-gradient(135deg,#0a0e17 0%,#0f1a12 50%,#0a0e17 100%);border:1px solid rgba(16,185,129,0.15);border-radius:16px;padding:24px 20px;margin-bottom:18px;box-shadow:0 4px 30px rgba(0,0,0,0.3),inset 0 1px 0 rgba(16,185,129,0.08);position:relative;overflow:hidden; }
+      #pane-generator-bola .gb-hero::before { content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(16,185,129,0.04) 0%,transparent 50%),radial-gradient(circle at 70% 60%,rgba(245,158,11,0.03) 0%,transparent 50%);pointer-events:none; }
+      #pane-generator-bola .gb-hero-title { font-family:'Cinzel',serif;font-size:clamp(20px,3vw,30px);font-weight:900;text-align:center;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#10B981 0%,#34D399 30%,#F59E0B 70%,#FBBF24 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;position:relative; }
+      #pane-generator-bola .gb-hero-sub { text-align:center;font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:4px;text-transform:uppercase;margin-top:6px;font-weight:600;position:relative; }
+      #pane-generator-bola .gb-section { background:linear-gradient(135deg,rgba(10,14,23,0.9),rgba(15,26,18,0.85));backdrop-filter:blur(10px);border:1px solid rgba(16,185,129,0.12);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 20px rgba(0,0,0,0.2),inset 0 1px 0 rgba(16,185,129,0.05);transition:border-color .3s; }
+      #pane-generator-bola .gb-section:hover { border-color:rgba(16,185,129,0.2); }
+      #pane-generator-bola .gb-stats { display:flex;gap:16px;margin-bottom:16px; }
+      #pane-generator-bola .gb-stat { flex:1;background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.02));border:1px solid rgba(16,185,129,0.12);border-radius:12px;padding:14px 12px;text-align:center;position:relative;overflow:hidden;transition:all .3s; }
+      #pane-generator-bola .gb-stat:hover { border-color:rgba(16,185,129,0.25);transform:translateY(-1px);box-shadow:0 4px 20px rgba(16,185,129,0.1); }
+      #pane-generator-bola .gb-stat::after { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#10B981,transparent); }
+      #pane-generator-bola .gb-stat-icon { font-size:20px;margin-bottom:6px;display:block; }
+      #pane-generator-bola .gb-stat-value { font-family:'Cinzel',serif;font-size:28px;font-weight:900;color:#10B981;line-height:1.1;text-shadow:0 0 20px rgba(16,185,129,0.3); }
+      #pane-generator-bola .gb-stat-label { font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-top:4px; }
+      #pane-generator-bola .gb-section-title { font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+      #pane-generator-bola .gb-section-title::after { content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(16,185,129,0.3),transparent); }
+      #pane-generator-bola .gb-input-wrap { position:relative; }
+      #pane-generator-bola .gb-input { width:100%;min-height:200px;padding:16px;background:rgba(0,0,0,0.5);border:1.5px solid rgba(16,185,129,0.12);border-radius:12px;color:#d1d5db;font-family:'Consolas','Courier New',monospace;font-size:12px;resize:vertical;transition:all .3s;line-height:1.6; }
+      #pane-generator-bola .gb-input:focus { outline:none;border-color:rgba(16,185,129,0.4);box-shadow:0 0 25px rgba(16,185,129,0.08); }
+      #pane-generator-bola .gb-input::placeholder { color:rgba(255,255,255,0.15); }
+      #pane-generator-bola .gb-output { background:rgba(0,0,0,0.5);border:1.5px solid rgba(16,185,129,0.12);border-radius:12px;padding:16px;min-height:200px;max-height:380px;overflow:auto;font-family:'Consolas','Courier New',monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;color:#34D399;line-height:1.5;transition:border-color .3s; }
+      #pane-generator-bola .gb-output:not(:empty) { border-color:rgba(16,185,129,0.2); }
+      #pane-generator-bola .gb-output::-webkit-scrollbar { width:6px; }
+      #pane-generator-bola .gb-output::-webkit-scrollbar-track { background:rgba(16,185,129,0.03);border-radius:3px; }
+      #pane-generator-bola .gb-output::-webkit-scrollbar-thumb { background:rgba(16,185,129,0.2);border-radius:3px; }
+      #pane-generator-bola .gb-output::-webkit-scrollbar-thumb:hover { background:rgba(16,185,129,0.35); }
+      #pane-generator-bola .gb-btn { position:relative;overflow:hidden;border:none;border-radius:10px;padding:11px 22px;font-family:'Cinzel',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;justify-content:center;gap:8px; }
+      #pane-generator-bola .gb-btn-primary { background:linear-gradient(135deg,#10B981,#059669);color:#fff;box-shadow:0 4px 15px rgba(16,185,129,0.25); }
+      #pane-generator-bola .gb-btn-primary:hover { transform:translateY(-2px);box-shadow:0 6px 25px rgba(16,185,129,0.35); }
+      #pane-generator-bola .gb-btn-secondary { background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.08); }
+      #pane-generator-bola .gb-btn-secondary:hover { background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.15); }
+      #pane-generator-bola .gb-btn-danger { background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;box-shadow:0 4px 15px rgba(239,68,68,0.2); }
+      #pane-generator-bola .gb-btn-danger:hover { transform:translateY(-2px);box-shadow:0 6px 25px rgba(239,68,68,0.3); }
+      #pane-generator-bola .gb-preview-section { background:linear-gradient(135deg,#060b14,#0a1210);border:1px solid rgba(16,185,129,0.15);border-radius:14px;padding:16px;margin-top:16px;box-shadow:0 4px 30px rgba(0,0,0,0.3); }
+      #pane-generator-bola .gb-preview-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(16,185,129,0.08); }
+      #pane-generator-bola .gb-preview-title { font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#10B981;letter-spacing:2px;text-transform:uppercase; }
+      #pane-generator-bola .gb-preview-date { font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px; }
+      #pane-generator-bola .gb-notif { display:none;text-align:center;padding:10px 16px;margin-top:12px;font-size:12px;font-weight:600;color:#34D399;background:rgba(16,185,129,0.06);border-radius:10px;border:1px solid rgba(16,185,129,0.12); }
+      @media(max-width:768px){ #pane-generator-bola .gb-stats { flex-direction:column;gap:10px; } }
+    </style>
+
+    <div class="gb-hero">
+      <div class="gb-hero-title">⚽ Generator Bola</div>
+      <div class="gb-hero-sub">Prediksi &amp; Analisis Pertandingan</div>
+    </div>
+
+    <div class="gb-section">
+      <div class="gb-section-title">📊 Statistik</div>
+      <div class="gb-stats">
+        <div class="gb-stat"><span class="gb-stat-icon">🏆</span><div class="gb-stat-value" id="gb-leagues-stat">0</div><div class="gb-stat-label">Liga</div></div>
+        <div class="gb-stat"><span class="gb-stat-icon">⚽</span><div class="gb-stat-value" id="gb-matches-stat">0</div><div class="gb-stat-label">Pertandingan</div></div>
+        <div class="gb-stat"><span class="gb-stat-icon">🏁</span><div class="gb-stat-value" id="gb-logos-stat">0</div><div class="gb-stat-label">Logo Tim</div></div>
+      </div>
+      <div class="gb-section-title" style="margin-top:4px;cursor:pointer;" id="gb-config-toggle">⚙️ Pengaturan Situs <span style="font-size:9px;opacity:.5;margin-left:auto;">klik untuk ubah</span></div>
+      <div id="gb-config-panel" style="display:none;margin-bottom:14px;padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid rgba(16,185,129,0.1);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:9px;color:#10B981;opacity:.7;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:4px;">🏷️ Nama Situs</div>
+            <input type="text" id="gb-cfg-name" style="width:100%;padding:7px 10px;background:rgba(0,0,0,0.5);border:1.5px solid rgba(16,185,129,0.15);border-radius:8px;color:#10B981;font-size:11px;font-weight:600;outline:none;" placeholder="BANDAR80">
+          </div>
+          <div>
+            <div style="font-size:9px;color:#10B981;opacity:.7;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:4px;">🎨 Warna Brand (hex)</div>
+            <div style="display:flex;gap:6px;">
+              <input type="color" id="gb-cfg-color-picker" style="width:40px;height:34px;padding:2px;border:1px solid rgba(16,185,129,0.2);border-radius:6px;background:transparent;cursor:pointer;">
+              <input type="text" id="gb-cfg-color" style="flex:1;padding:7px 10px;background:rgba(0,0,0,0.5);border:1.5px solid rgba(16,185,129,0.15);border-radius:8px;color:#10B981;font-size:11px;font-weight:600;outline:none;" placeholder="#00BFFF">
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:9px;color:#10B981;opacity:.7;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:4px;">🖼️ URL Logo</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="gb-cfg-logo" style="flex:1;padding:7px 10px;background:rgba(0,0,0,0.5);border:1.5px solid rgba(16,185,129,0.15);border-radius:8px;color:#10B981;font-size:11px;font-weight:600;outline:none;" placeholder="https://...">
+            <img id="gb-cfg-logo-preview" style="height:40px;width:40px;object-fit:contain;border-radius:4px;border:1px solid rgba(16,185,129,0.1);flex-shrink:0;display:none;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="gb-btn gb-btn-primary" id="gb-cfg-save" style="padding:8px 18px;font-size:10px;">Simpan</button>
+          <button class="gb-btn gb-btn-secondary" id="gb-cfg-reset" style="padding:8px 18px;font-size:10px;">Reset Default</button>
+        </div>
+      </div>
+
+      <div class="gb-input-wrap">
+        <textarea id="gb-input" class="gb-input" placeholder="Masukkan prediksi bola — semua format terbaca otomatis:
+
+ENGLISH PREMIER LEAGUE
+08/02 21:00 WIB Brighton VS Crystal Palace 1 : 1
+08/02 23:30 WIB Liverpool VS Manchester City 2 - 2
+
+WOMEN WORLD CUP QUALIFIERS
+08/02 23:00 WIB Norway [W] VS Slovenia [W] 4 : 0
+
+[W], U17, U20, U21, U23 → otomatis diabaikan saat cari logo,
+namun tetap tampil di output prediksi."></textarea>
+      </div>
+    </div>
+
+    <div class="gb-section">
+      <div class="gb-section-title">📤 Output HTML</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="gb-btn gb-btn-primary" id="gb-copy-btn">📋 Copy Script</button>
+        <button class="gb-btn gb-btn-secondary" id="gb-clear-btn">🗑️ Clear</button>
+      </div>
+      <div class="gb-output" id="gb-output">Script HTML akan muncul di sini...</div>
+    </div>
+
+    <div class="gb-preview-section">
+      <div class="gb-preview-header">
+        <span class="gb-preview-title">👁️ Preview</span>
+        <span class="gb-preview-date"><span id="gb-date"></span></span>
+      </div>
+      <div id="gb-preview" style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.25);font-size:13px;font-family:'Cinzel',serif;letter-spacing:1px;">Preview akan muncul di sini secara otomatis...</div>
+      <div id="gb-notif" class="gb-notif"></div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-ai">
+    <div class="card" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 130px);">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(99,102,241,0.08);background:#0f1322;flex-shrink:0;">
+        <span style="font-size:13px;font-weight:700;color:#d1d5db;">AI Chat</span>
+        <span id="ai-model-indicator" style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(99,102,241,0.12);color:#818cf8;font-weight:600;">OpenRouter</span>
+        <span style="margin-left:auto;"></span>
+        <button id="ai-clear-btn" class="btn btn-sm btn-danger" style="padding:4px 10px;font-size:10px;">Hapus Chat</button>
+      </div>
+      <div id="ai-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="ai-preview" style="display:none;gap:8px;padding:8px 16px;border-top:1px solid rgba(99,102,241,0.08);flex-wrap:wrap;background:#0f1322;"></div>
+      <div style="display:flex;gap:6px;padding:10px 14px;border-top:1px solid rgba(99,102,241,0.08);background:#0f1322;align-items:flex-end;">
+        <button id="ai-upload-btn" class="btn btn-sm btn-secondary" style="padding:8px 10px;font-size:15px;line-height:1;height:38px;" title="Upload gambar"><i class="fas fa-paperclip"></i></button>
+        <textarea id="ai-input" rows="1" placeholder="Ketik pesan..." style="flex:1;resize:none;padding:9px 12px;background:#1a2035;border:1px solid rgba(99,102,241,0.1);border-radius:8px;color:#d1d5db;font-size:13px;font-family:inherit;outline:none;min-height:38px;max-height:120px;"></textarea>
+        <button id="ai-model-btn" class="btn btn-sm btn-info" style="padding:8px 12px;font-size:10px;font-weight:700;white-space:nowrap;height:38px;line-height:1;" title="Klik untuk ganti model">Ganti Model</button>
+        <button id="ai-send-btn" class="btn btn-primary" style="padding:8px 18px;font-size:13px;font-weight:700;border-radius:8px;height:38px;line-height:1;">Kirim</button>
+      </div>
+      <input type="file" id="ai-file-input" accept="image/*,.pdf" multiple style="display:none;">
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-typing">
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid rgba(99,102,241,0.06);margin-bottom:14px;">
+        <span style="font-size:15px;font-weight:700;color:#d1d5db;">Typing Test - 1 Menit</span>
+        <span style="margin-left:auto;display:flex;gap:12px;font-size:12px;">
+          <span id="typing-wpm" style="color:#86efac;font-weight:700;">0 WPM</span>
+          <span id="typing-accuracy" style="color:#fbbf24;font-weight:700;">100%</span>
+          <span id="typing-time" style="color:#94a3b8;">01:00</span>
+        </span>
+      </div>
+      <div id="typing-text" style="font-size:32px;line-height:60px;padding:0;background:#1a2035;border-radius:8px;border:1px solid rgba(99,102,241,0.1);margin-bottom:12px;font-family:Arial,sans-serif;user-select:none;height:120px;overflow:hidden;box-sizing:border-box;"></div>
+      <textarea id="typing-input" rows="2" placeholder="Ketik di sini..." style="width:100%;resize:none;padding:12px 14px;background:#1a2035;border:1px solid rgba(99,102,241,0.1);border-radius:8px;color:#d1d5db;font-size:22px;font-family:Arial,sans-serif;outline:none;min-height:70px;" disabled></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+        <button id="typing-refresh-btn" class="btn btn-sm btn-secondary" style="padding:6px 10px;font-size:14px;line-height:1;" title="Refresh">&crarr;</button>
+        <span id="typing-status" style="font-size:12px;color:#6b7280;"></span>
+      </div>
+      <div id="typing-results" style="display:none;margin-top:14px;padding:16px 20px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.04));border-radius:12px;border:1px solid rgba(99,102,241,0.15);">
+        <div style="display:flex;gap:0;flex-wrap:wrap;text-align:center;">
+          <div style="flex:1;min-width:80px;padding:8px 6px;"><div style="font-size:24px;font-weight:800;color:#86efac;" id="result-wpm">0</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">WPM</div></div>
+          <div style="flex:1;min-width:80px;padding:8px 6px;border-left:1px solid rgba(99,102,241,0.1);"><div style="font-size:24px;font-weight:800;color:#fbbf24;" id="result-accuracy">0%</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Akurasi</div></div>
+          <div style="flex:1;min-width:80px;padding:8px 6px;border-left:1px solid rgba(99,102,241,0.1);"><div style="font-size:24px;font-weight:800;color:#94a3b8;" id="result-time">00:00</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Waktu</div></div>
+          <div style="flex:1;min-width:80px;padding:8px 6px;border-left:1px solid rgba(99,102,241,0.1);"><div style="font-size:24px;font-weight:800;color:#86efac;" id="result-correct">0</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Benar</div></div>
+          <div style="flex:1;min-width:80px;padding:8px 6px;border-left:1px solid rgba(99,102,241,0.1);"><div style="font-size:24px;font-weight:800;color:#f87171;" id="result-wrong">0</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">Salah</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:20px;margin-top:12px;">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid rgba(99,102,241,0.06);margin-bottom:10px;">
+        <span style="font-size:14px;font-weight:700;color:#d1d5db;">Ranking</span>
+        <span style="font-size:11px;color:#6b7280;margin-left:auto;">Top 20</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(99,102,241,0.08);">
+              <th style="padding:8px 10px;text-align:center;color:#6b7280;font-weight:600;">#</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">Email</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">WPM</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">Akurasi</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">Benar</th>
+              <th style="padding:8px 10px;text-align:left;color:#6b7280;font-weight:600;">Salah</th>
+            </tr>
+          </thead>
+          <tbody id="typing-rankings-body">
+            <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:16px;">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-memo">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid rgba(99,102,241,0.06);margin-bottom:14px;">
+        <span style="font-size:15px;font-weight:700;color:#d1d5db;">Memo</span>
+        <span style="font-size:10px;color:#374151;margin-left:auto;">Otomatis terhapus 3 hari</span>
+      </div>
+      <div id="memo-list" class="memo-container"></div>
+      <div style="display:flex;gap:8px;border-top:1px solid rgba(99,102,241,0.06);padding-top:12px;margin-top:2px;align-items:flex-end;">
+        <textarea id="memo-input" rows="2" placeholder="Tulis memo untuk tim..." style="flex:1;resize:none;padding:9px 12px;background:#1a2035;border:1px solid rgba(99,102,241,0.1);border-radius:8px;color:#d1d5db;font-size:13px;font-family:inherit;outline:none;min-height:38px;"></textarea>
+        <button id="memo-send-btn" class="btn btn-primary" style="padding:8px 18px;font-size:13px;font-weight:700;border-radius:8px;height:38px;line-height:1;">Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ai-img-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,5,20,0.97);backdrop-filter:blur(12px);animation:fadeIn .3s ease;">
+    <button id="ai-img-close" style="position:absolute;top:20px;right:20px;width:36px;height:36px;z-index:1001;background:rgba(15,23,42,0.85);border:1.5px solid rgba(99,102,241,0.3);border-radius:50%;color:#a5b4fc;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;">&times;</button>
+    <div id="ai-img-modal-inner" style="position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;padding:2rem;cursor:zoom-out;">
+      <img id="ai-img-modal-img" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(99,102,241,0.15);border:2px solid rgba(99,102,241,0.2);cursor:default;" />
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="panduanModal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,5,20,0.97);backdrop-filter:blur(12px);animation:fadeIn .3s ease;">
+  <span id="panduanClose" style="position:absolute;top:2rem;right:2rem;color:#a5b4fc;font-size:1.8rem;cursor:pointer;z-index:1001;width:50px;height:50px;background:rgba(15,23,42,0.85);border-radius:50%;border:2px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;transition:all .3s ease;backdrop-filter:blur(10px);">&times;</span>
+  <div style="position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;padding:2rem;">
+    <img id="panduanModalImg" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:12px;transition:transform .1s ease-out;transform-origin:center center;box-shadow:0 20px 60px rgba(99,102,241,0.15);border:2px solid rgba(99,102,241,0.2);" />
+  </div>
+  <div style="position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;gap:1rem;z-index:1002;">
+    <button class="zoom-panduan-btn" data-zoom="in" style="width:50px;height:50px;background:rgba(15,23,42,0.85);border:2px solid rgba(99,102,241,0.3);border-radius:50%;color:#a5b4fc;font-size:1.2rem;font-weight:bold;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 14px rgba(0,0,0,0.4);"><i class="fas fa-plus"></i></button>
+    <button class="zoom-panduan-btn" data-zoom="out" style="width:50px;height:50px;background:rgba(15,23,42,0.85);border:2px solid rgba(99,102,241,0.3);border-radius:50%;color:#a5b4fc;font-size:1.2rem;font-weight:bold;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 14px rgba(0,0,0,0.4);"><i class="fas fa-minus"></i></button>
+    <button class="zoom-panduan-btn" data-zoom="reset" style="width:50px;height:50px;background:rgba(15,23,42,0.85);border:2px solid rgba(99,102,241,0.3);border-radius:50%;color:#a5b4fc;font-size:1.2rem;font-weight:bold;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 14px rgba(0,0,0,0.4);"><i class="fas fa-redo"></i></button>
+  </div>
+</div>
+
+<div id="deco-overlay" style="display:none;">
+  <div id="deco-panel">
+    <h3>Hias Dashboard</h3>
+    <div class="deco-field">
+      <label>Gambar / GIF Kiri (maks 3)</label>
+      <div class="deco-list" id="deco-list-left"></div>
+      <button class="deco-add-btn" id="deco-add-left">+ Tambah Gambar (klik / paste / drag)</button>
+      <div class="dli-count" id="deco-count-left">0 / 4</div>
+    </div>
+    <div class="deco-field">
+      <label>Gambar / GIF Kanan (maks 3)</label>
+      <div class="deco-list" id="deco-list-right"></div>
+      <button class="deco-add-btn" id="deco-add-right">+ Tambah Gambar (klik / paste / drag)</button>
+      <div class="dli-count" id="deco-count-right">0 / 4</div>
+    </div>
+    <div class="deco-field">
+      <label>Gambar Latar Belakang (Dashboard)</label>
+      <div id="bg-preview" style="width:100%;height:60px;border-radius:6px;background-size:cover;background-position:center;border:1px solid rgba(99,102,241,0.15);margin-bottom:6px;display:none;"></div>
+      <button class="deco-add-btn" id="bg-add-btn">+ Upload Gambar Latar Dashboard</button>
+      <button class="btn btn-sm btn-danger" id="bg-remove-btn" style="display:none;margin-top:4px;">Hapus Latar Dashboard</button>
+    </div>
+    <div class="deco-field">
+      <label>Latar LiveChat (my.livechatinc.com/chats)</label>
+      <div id="lc-bg-preview" style="width:100%;height:60px;border-radius:6px;background-size:cover;background-position:center;border:1px solid rgba(99,102,241,0.15);margin-bottom:6px;display:none;"></div>
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <input type="text" id="lc-bg-url-input" placeholder="Atau paste direct link gambar..." style="flex:1;padding:4px 8px;font-size:12px;border:1px solid rgba(99,102,241,0.2);border-radius:4px;background:rgba(0,0,0,0.2);color:white;">
+        <button class="btn btn-sm btn-primary" id="lc-bg-url-btn" style="padding:4px 10px;">Pakai</button>
+      </div>
+      <button class="deco-add-btn" id="lc-bg-add-btn">+ Upload Gambar / GIF LiveChat</button>
+      <button class="btn btn-sm btn-danger" id="lc-bg-remove-btn" style="display:none;margin-top:4px;">Hapus Latar LiveChat</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;">
+      <button class="btn btn-sm btn-secondary" id="deco-close">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="deco-file-input" accept="image/*" style="display:none;">
+<input type="file" id="bg-file-input" accept="image/*" style="display:none;">
+<input type="file" id="lc-bg-file-input" accept="image/*" style="display:none;">
+
+<div id="loginOverlay" class="hidden">
+  <div id="loginBox">
+    <h2>🔐 AUTO RELAX</h2>
+    <p id="loginDesc">Login dengan Google untuk melanjutkan</p>
+    <div class="login-error" id="loginError"></div>
+    <button id="loginBtn">Login dengan Google</button>
+  </div>
+</div>
+
+<script src="../lib/tesseract.min.js"></script>
+<script src="../modules/generator-bola.js"></script>
+<script type="module" src="dashboard.js"></script>
+
+</body>
+</html>

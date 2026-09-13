@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: Arial, sans-serif;
+  background: #080b14;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+#crop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .15s ease, visibility .15s;
+}
+#crop-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+#crop-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 10;
+  background: rgba(15,23,42,0.92);
+  backdrop-filter: blur(8px);
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,0.15);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+#crop-toolbar .hint {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-right: 8px;
+}
+#crop-toolbar button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+#crop-confirm {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+#crop-confirm:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.4); }
+#crop-nama:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(5,150,105,0.4); }
+#crop-cancel {
+  background: rgba(239,68,68,0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.2);
+}
+#crop-cancel:hover { background: rgba(239,68,68,0.25); }
+#crop-container {
+  position: relative;
+  overflow: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  background: #0f1322;
+  cursor: crosshair;
+  user-select: none;
+}
+#crop-image {
+  display: block;
+}
+/* Scrollbar kustom — tema gelap */
+#crop-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+#crop-container::-webkit-scrollbar-track {
+  background: rgba(15,23,42,0.5);
+  border-radius: 4px;
+}
+#crop-container::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.3);
+  border-radius: 4px;
+  transition: background .2s;
+}
+#crop-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(99,102,241,0.5);
+}
+#crop-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+#crop-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.3) rgba(15,23,42,0.5);
+}
+#crop-selection {
+  position: absolute;
+  border: 2px solid #facc15;
+  background: rgba(250,204,21,0.08);
+  cursor: move;
+  display: none;
+  pointer-events: auto;
+}
+#crop-selection.show { display: block; }
+/* Alignment guides — garis tipis dari tepi selection ke tepi container */
+.crop-guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  display: none;
+}
+.crop-guide.show { display: block; }
+.crop-guide.h {
+  height: 1px;
+  left: 0;
+  right: 0;
+  background: repeating-linear-gradient(90deg, #facc15 0px, #facc15 8px, transparent 8px, transparent 16px);
+}
+.crop-guide.v {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(0deg, #facc15 0px, #facc15 8px, transparent 8px, transparent 16px);
+}
+
+#crop-selection .handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #facc15;
+  border: 2px solid #000;
+  border-radius: 2px;
+  z-index: 5;
+}
+#crop-selection .handle.tl { top: -6px; left: -6px; cursor: nw-resize; }
+#crop-selection .handle.tr { top: -6px; right: -6px; cursor: ne-resize; }
+#crop-selection .handle.bl { bottom: -6px; left: -6px; cursor: sw-resize; }
+#crop-selection .handle.br { bottom: -6px; right: -6px; cursor: se-resize; }
+#crop-selection .size-label {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #facc15;
+  background: rgba(0,0,0,0.7);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+</style>
+</head><body>
+<div id="crop-overlay">
+  <div id="crop-toolbar">
+    <span class="hint">&#9678; Seret untuk memilih area crop</span>
+    <span id="crop-zoom-display" style="font-size:11px;color:#94a3b8;min-width:40px;text-align:center;">100%</span>
+    <button id="crop-zoom-out" style="padding:4px 10px;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(99,102,241,0.12);color:#818cf8;">−</button>
+    <button id="crop-zoom-in" style="padding:4px 10px;border:none;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(99,102,241,0.12);color:#818cf8;">+</button>
+    <button id="crop-confirm">&#128203; CROP KODE TIKET</button>
+    <button id="crop-nama" style="padding:6px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;background:linear-gradient(135deg,#059669,#10b981);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,0.3);">&#128196; CROP NAMA/RRN</button>
+    <button id="crop-cancel">&#10005; Batal</button>
+  </div>
+  <div id="crop-loading" style="display:none;color:#94a3b8;font-size:14px;font-weight:600;letter-spacing:.3px;padding:24px;">Memuat gambar…</div>
+  <div id="crop-container">
+    <img id="crop-image" alt="">
+    <div class="crop-guide v" id="crop-guide-l"></div>
+    <div class="crop-guide v" id="crop-guide-r"></div>
+    <div class="crop-guide h" id="crop-guide-t"></div>
+    <div class="crop-guide h" id="crop-guide-b"></div>
+    <div id="crop-selection">
+      <span class="handle tl"></span>
+      <span class="handle tr"></span>
+      <span class="handle bl"></span>
+      <span class="handle br"></span>
+      <span class="size-label" id="crop-size-label">0×0</span>
+    </div>
+  </div>
+</div>
+<script type="module" src="ocr-frame.js"></script>
+</body></html>

@@ -5,3 +5,6 @@ deploy/
 deploy-master/
 .vercel
 bot/config.local.js
+Sniper_v2.1.0.exe
+*.wasm
+*.traineddata

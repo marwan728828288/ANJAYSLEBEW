@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Scater Token Harvester",
+  "version": "1.0.0",
+  "description": "Tangkap X-Access-Token/X-Agent-* dari halaman admin bandar lalu kirim ke Supabase utk daemon CEK.",
+  "permissions": ["webRequest", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
