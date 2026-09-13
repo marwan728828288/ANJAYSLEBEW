@@ -173,6 +173,15 @@
   .wchk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);min-height:38px;}
   .wchk input{accent-color:var(--gold);}
   .wcur{font-size:10.5px;color:var(--muted);background:rgba(216,180,90,.06);border:1px dashed var(--line);border-radius:9px;padding:8px 11px;line-height:1.6;}
+  .tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
+  .tbl th{text-align:left;font-size:9px;font-weight:800;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;padding:8px 8px;border-bottom:1px solid var(--line2);white-space:nowrap;}
+  .tbl td{padding:8px 8px;border-bottom:1px solid var(--line);color:var(--soft);vertical-align:middle;word-break:break-word;}
+  .tbl td.mono{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:9.5px;font-weight:800;letter-spacing:.08em;}
+  .pill.fresh{color:#06281a;background:var(--green);}
+  .pill.expired{color:#fff;background:var(--red);}
+  .pill.mixed{color:#3a2b00;background:var(--amber);}
+  @media(max-width:560px){.tbl th:nth-child(4),.tbl td:nth-child(4){display:none;}}
 
   @media(max-width:640px){.wrap{padding:18px 12px 34px;}.card{padding:18px 15px 20px;}.sitegrid{grid-template-columns:1fr 1fr;}}
   @media(max-width:430px){.sitegrid{grid-template-columns:1fr;}.stats{grid-template-columns:1fr 1fr;}}
@@ -231,6 +240,7 @@
       <button data-v="claim">Semua Klaim</button>
       <button data-v="health">Kesehatan</button>
       <button data-v="otomasi">Otomasi</button>
+      <button data-v="header" id="navHeader" style="display:none">Header</button>
       <button data-v="staff" id="navStaff" style="display:none">Staff</button>
     </nav>
 
@@ -283,6 +293,7 @@
     <section id="view-otomasi" class="view">
       <div class="card">
         <div class="kicker"><span>Daemon Otomasi</span><div class="hr"></div></div>
+        <div class="hint" style="margin-bottom:12px">Prosesor saat ini <b>web-only</b> (cron Vercel tiap 1 menit — lihat tab Header Admin). Tampilan "Daemon/PC owner" di bawah ini statusnya tinggal (daemon lokal tidak lagi dipakai).</div>
 
         <div id="wSetup" class="hint" style="display:none">
           <b>Daemon belum terkoneksi ke panel.</b><br>
@@ -336,6 +347,47 @@
           </div>
           <button class="btn" id="wSave" style="margin-top:14px;">Simpan Parameter</button>
         </div>
+      </div>
+    </section>
+
+    <!-- HEADER ADMIN -->
+    <section id="view-header" class="view">
+      <div class="card">
+        <div class="kicker"><span>Header Admin (Token)</span><div class="hr"></div></div>
+        <div class="hint" style="margin-bottom:12px">Mode <b>web-only</b>: tanpa daemon/Chrome/extension. Paste <b>X-Access-Token</b> admin situs di sini — token sama dipakai untuk CEK history &amp; scatter GetBetHistory. Cron otomatis tiap 1 menit + tombol "Proses Sekarang" di bawah.</div>
+        <div class="wgrid">
+          <div class="wfield">
+            <label>Host Situs</label>
+            <input id="tokHost" placeholder="bandar80.idrbo2.com" maxlength="120">
+          </div>
+          <div class="wfield">
+            <label>Base URL API</label>
+            <input id="tokBase" placeholder="https://bandar80.idrbo2.com" maxlength="160">
+          </div>
+          <div class="wfield" style="grid-column:1/-1">
+            <label>X-Access-Token admin (paste dari Network tab / URL history)</label>
+            <textarea id="tokToken" rows="2" style="width:100%;font-family:var(--mono);font-size:11px;"></textarea>
+          </div>
+          <div class="wfield"><label>X-Agent-Pkid</label><input id="tokPkid" maxlength="60"></div>
+          <div class="wfield"><label>X-Agent-Role</label><input id="tokRole" maxlength="60"></div>
+          <div class="wfield"><label>X-Agent-Suid</label><input id="tokSuid" maxlength="60"></div>
+          <div class="wfield"><label>X-Agent-User</label><input id="tokUser" maxlength="120"></div>
+          <div class="wfield"><label>X-Agent-UserId</label><input id="tokUserId" maxlength="120"></div>
+          <div class="wfield" style="grid-column:1/-1">
+            <button class="btn" id="btnTokSave" style="margin-right:8px;">Simpan Sesi Admin</button>
+            <button class="sm" id="btnProcessWeb">⟳ Proses Sekarang (Web)</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap;">
+          <span id="hdSummary" style="font-size:11px;color:var(--muted);margin:0;">Memuat…</span>
+          <span class="spacer" style="flex:1"></span>
+          <button class="sm" id="btnHdRefresh">Segarkan</button>
+        </div>
+        <div id="hdEmpty" style="display:none"></div>
+        <table class="tbl" id="hdTable" style="display:none">
+          <thead><tr><th>Host</th><th>JWT</th><th>Status</th><th>Tertangkap</th><th>Token</th><th></th></tr></thead>
+          <tbody id="hdBody"></tbody>
+        </table>
       </div>
     </section>
 
@@ -421,6 +473,7 @@
     if (name === 'claim') renderRows();
     if (name === 'health') loadHealth();
     if (name === 'otomasi') loadWorker();
+    if (name === 'header') loadHeaders();
     if (name === 'staff') loadStaff();
     if (name === 'otomasi') { if (wTimer) clearTimeout(wTimer); }
     else { if (wTimer) { clearTimeout(wTimer); wTimer = null; } }
@@ -578,14 +631,14 @@
     boot();
   }
   function applyPerms() {
-    var nav = { ringkas: hasPerm('ringkas'), claim: hasPerm('datalaim'), health: hasPerm('pantau'), otomasi: hasPerm('pantau') || hasPerm('approve'), staff: hasPerm('staff') };
+    var nav = { ringkas: hasPerm('ringkas'), claim: hasPerm('datalaim'), health: hasPerm('pantau'), otomasi: hasPerm('pantau') || hasPerm('approve'), header: hasPerm('pantau'), staff: hasPerm('staff') };
     Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) {
       var v = b.getAttribute('data-v');
       b.style.display = nav[v] ? '' : 'none';
     });
     $('navStaff').style.display = hasPerm('staff') ? '' : 'none';
     if (!nav[currentTab]) {
-      var first = ['ringkas', 'claim', 'health', 'otomasi', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
+      var first = ['ringkas', 'claim', 'health', 'otomasi', 'header', 'staff'].filter(function (k) { return nav[k]; })[0] || 'ringkas';
       setTab(first);
     }
     var whois = acct.kind === 'owner' ? 'Owner' : ('Staff Â· ' + ((acct.staff && (acct.staff.fullname || acct.staff.username)) || 'ok'));
@@ -923,6 +976,103 @@
       toast((e && e.message) || 'Gagal menyimpan.', 'bad');
     });
   });
+
+  /* ---------- header admin (worker_tokens) ---------- */
+  var hdTimer = null;
+  function _hdEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function _hdDiff(ms) {
+    if (ms == null) return '-';
+    var neg = ms < 0, s = Math.abs(ms), h = Math.floor(s / 3600000), m = Math.floor(s % 3600000 / 60000), ss = Math.floor(s % 60000 / 1000);
+    return (neg ? '-' : '+') + (h > 0 ? h + 'j ' + m + 'm' : m > 0 ? m + 'm ' + ss + 's' : ss + 's');
+  }
+  function _hdPill(r) {
+    if (!r.ok) return '<span class="pill expired">KOSONG</span>';
+    if (r.exp_at == null) return '<span class="pill mixed">TANPA EXP</span>';
+    return r.fresh ? '<span class="pill fresh">SEGAR</span>' : '<span class="pill expired">KADALUWARSA</span>';
+  }
+  function renderHeaders(toks, lastAt) {
+    var table = $('hdTable'), empty = $('hdEmpty'), body = $('hdBody'), sum = $('hdSummary');
+    if (!toks || !toks.length) {
+      table.style.display = 'none'; empty.style.display = 'block';
+      empty.innerHTML = '<b>Belum ada sesi admin.</b><br>Paste X-Access-Token di form &ldquo;Simpan Sesi Admin&rdquo; di atas (jalankan <code>bot/supabase/worker_tokens.sql</code> sekali sebelum itu).';
+      sum.textContent = '0 host · ' + new Date(lastAt).toLocaleTimeString('id-ID'); return;
+    }
+    table.style.display = ''; empty.style.display = 'none';
+    body.innerHTML = toks.map(function (r) {
+      var exp = r.exp_at != null ? new Date(r.exp_at).getTime() - Date.now() : null;
+      return '<tr>' +
+        '<td><b>' + _hdEsc(r.host) + '</b>' + (r.base ? '<br><span class="muted" style="font-size:9.5px;">' + _hdEsc(r.base) + '</span>' : '') + '</td>' +
+        '<td class="mono">' + _hdEsc(_hdDiff(exp)) + '</td>' +
+        '<td>' + _hdPill(r) + '</td>' +
+        '<td class="mono">' + _hdEsc(r.captured_at ? new Date(r.captured_at).toLocaleString('id-ID') : '-') + '</td>' +
+        '<td class="mono">' + _hdEsc(r.token_masked || '-') + '</td>' +
+        '<td>' + (r.ok ? '<button class="sm" data-hdel="' + _hdEsc(r.host) + '">Hapus</button>' : '') + '</td>' +
+      '</tr>';
+    }).join('');
+    sum.textContent = (toks.length + ' host · segarkan ' + new Date(lastAt).toLocaleTimeString('id-ID'));
+  }
+  function loadHeaders() {
+    api('GET', '/api/worker/tokens').then(function (d) {
+      renderHeaders(d.tokens || [], Date.now());
+      if (hdTimer) clearTimeout(hdTimer);
+      hdTimer = setTimeout(loadHeaders, 15000);
+    }).catch(function (e) {
+      $('hdSummary').textContent = 'Gagal memuat token.';
+      if (unAuth(e)) return bootFail();
+    });
+  }
+  function hdDelToken(host) {
+    if (!confirm('Hapus token header untuk ' + host + '?')) return;
+    api('DELETE', '/api/worker/tokens', { hosts: [host] }).then(function (d) {
+      toast('Dihapus: ' + host, 'ok');
+      if (currentTab === 'header') loadHeaders();
+    }).catch(function (e) { if (unAuth(e)) return bootFail(); toast(e.message || 'Gagal hapus.', 'bad'); });
+  }
+  function hdSaveToken() {
+    if (!hasPerm('approve')) { toast('Butuh izin Approve untuk menyimpan sesi admin.', 'bad'); return; }
+    var headers = { 'X-Access-Token': ($('tokToken').value || '').trim() };
+    ['Pkid', 'Role', 'Suid', 'User', 'UserId'].forEach(function (k) {
+      var v = ($('tok' + k).value || '').trim();
+      if (v) headers['X-Agent-' + k] = v;
+    });
+    var body = {
+      host: ($('tokHost').value || '').trim(),
+      base: ($('tokBase').value || '').trim(),
+      headers: headers
+    };
+    if (!body.host) { toast('Host situs wajib diisi.', 'bad'); return; }
+    if (!headers['X-Access-Token'] || headers['X-Access-Token'].length < 10) { toast('X-Access-Token wajib diisi (min. 10 karakter).', 'bad'); return; }
+    var b = $('btnTokSave'); b.disabled = true; b.textContent = 'Menyimpan…';
+    api('POST', '/api/worker/tokens', body).then(function () {
+      b.disabled = false; b.textContent = 'Simpan Sesi Admin';
+      toast('Sesi admin disimpan: ' + body.host, 'ok');
+      loadHeaders();
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = 'Simpan Sesi Admin';
+      if (unAuth(e)) return bootFail();
+      toast((e && e.message) || 'Gagal menyimpan.', 'bad');
+    });
+  }
+  function runProcessWeb() {
+    if (!hasPerm('approve')) { toast('Butuh izin Approve untuk memproses.', 'bad'); return; }
+    var b = $('btnProcessWeb'); b.disabled = true; b.textContent = 'Memproses…';
+    api('POST', '/api/worker/process').then(function (d) {
+      b.disabled = false; b.textContent = '⟳ Proses Sekarang (Web)';
+      var s = (d && d.summary) || {};
+      toast('Web: ' + (s.scanned || 0) + ' dicek · ' + (s.locked || 0) + ' diproses · ' + (s.settled || 0) + ' selesai' + (s.retried ? ' · ' + s.retried + ' retry' : '') + (s.errors ? ' · ' + s.errors + ' error' : '') + '.', 'ok');
+      setTimeout(loadWorker, 1500);
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = '⟳ Proses Sekarang (Web)';
+      if (unAuth(e)) return bootFail();
+      toast((e && e.message) || 'Gagal memproses.', 'bad');
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('[data-hdel]') : null;
+    if (b) hdDelToken(b.getAttribute('data-hdel'));
+  });
+  $('btnTokSave').addEventListener('click', hdSaveToken);
+  $('btnProcessWeb').addEventListener('click', runProcessWeb);
 
   /* ---------- boot ---------- */
   function bootFail() { toast('Sesi berakhir. Login ulang.', 'bad'); setTimeout(function () { location.reload(); }, 900); }

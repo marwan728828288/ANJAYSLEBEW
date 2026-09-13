@@ -20,6 +20,7 @@ export async function cdpConnect(port = 9222, urlMatch = '') {
     const ws = new WebSocket(wsUrl);
     const pending = new Map();
     let closed = false;
+    const tmr = setTimeout(() => { if (!closed) { closed = true; reject(new Error('CDP: connect timeout 5s')); try { ws.close(); } catch (_) {} } }, 5000);
 
     function send(method, params) {
       return new Promise((res, rej) => {
@@ -33,12 +34,16 @@ export async function cdpConnect(port = 9222, urlMatch = '') {
       resolve({
         tabUrl: page.url,
         async evaluate(expression, opts = {}) {
-          const r = await send('Runtime.evaluate', {
-            expression,
-            awaitPromise: opts.awaitPromise !== false,
-            returnByValue: opts.returnByValue !== false,
-            userGesture: true
-          });
+          const maxMs = opts.timeout || 40000;
+          const r = await Promise.race([
+            send('Runtime.evaluate', {
+              expression,
+              awaitPromise: opts.awaitPromise !== false,
+              returnByValue: opts.returnByValue !== false,
+              userGesture: true
+            }),
+            new Promise((_, rejEval) => setTimeout(() => rejEval(new Error('CDP: evaluate timeout ' + maxMs + 'ms')), maxMs))
+          ]);
           if (r.result && r.result.exceptionDetails) {
             const desc = r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text || 'evaluate error';
             throw new Error(desc);
@@ -69,6 +74,20 @@ export async function cdpConnect(port = 9222, urlMatch = '') {
 export async function listPages(port = 9222) {
   const targets = await reqJSON(port, '/json');
   return (targets || []).filter(t => t.type === 'page');
+}
+
+/* Buka tab baru (setara chrome.tabs.create); target lengkap {id,url,...}. */
+export async function openPage(port = 9222, url) {
+  const r = await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' });
+  if (!r.ok) throw new Error('CDP openPage HTTP ' + r.status);
+  return r.json();
+}
+
+/* Tutup tab (setara chrome.tabs.remove). */
+export async function closePage(port = 9222, id) {
+  const r = await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(id)}`, { method: 'PUT' });
+  if (!r.ok) throw new Error('CDP closePage HTTP ' + r.status);
+  return r.json().catch(() => null);
 }
 
 /* Ekten ke SEMUA tab yang cocok urlMatch. Handle: send/on/eval/addNewDocScript/close. */
@@ -115,8 +134,8 @@ function connectRaw(target) {
         },
         async eval(expression, awaitPromise = true, returnByValue = true) {
           const r = await this.send('Runtime.evaluate', { expression, awaitPromise, returnByValue, userGesture: true });
-          if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text || 'evaluate error');
-          return r.result && r.result.result && r.result.result.value;
+          if (r && r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || r.exceptionDetails.text || 'evaluate error');
+          return r && r.result && r.result.value;
         },
         async addNewDocScript(name, source) {
           const r = await this.send('Page.addScriptToEvaluateOnNewDocument', { source, runImmediately: true });

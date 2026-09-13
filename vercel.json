@@ -43,11 +43,25 @@
   "rewrites": [
     {
       "source": "/api/worker/config",
-      "destination": "/api/worker"
+      "destination": "/api/master/worker/config"
     },
     {
       "source": "/api/worker/command",
-      "destination": "/api/worker"
+      "destination": "/api/master/worker/command"
+    },
+    {
+      "source": "/api/worker/tokens",
+      "destination": "/api/master/worker/tokens"
+    },
+    {
+      "source": "/api/worker/process",
+      "destination": "/api/master/worker/process"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/worker/process",
+      "schedule": "* * * * *"
     }
   ],
   "redirects": [

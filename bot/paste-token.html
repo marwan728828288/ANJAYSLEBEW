@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tempel Token Admin — Auto Scater</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1e26; --line:#2a3040; --txt:#e8ecf4; --mut:#9aa4b6; --acc:#4f83f7; --ok:#2ecc71; --bad:#e74c3c; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.45 system-ui,Segoe UI,Roboto; background:var(--bg); color:var(--txt); padding:24px; }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:17px; margin:0 0 4px; }
+  p.sub { color:var(--mut); margin:2px 0 18px; font-size:12.5px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  label { display:block; font-size:12px; color:var(--mut); margin:0 0 6px; }
+  input[type=text], textarea { width:100%; background:#0d1016; border:1px solid var(--line); border-radius:8px; color:var(--txt); padding:10px; font-size:13px; }
+  textarea { min-height:150px; font-family:Consolas,monospace; font-size:12px; resize:vertical; }
+  .row { display:flex; gap:12px; }
+  .row > div { flex:1; }
+  .btn { margin-top:14px; background:var(--acc); color:#fff; border:0; border-radius:8px; padding:11px 18px; font-size:14px; font-weight:600; cursor:pointer; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  #st { margin-top:12px; font-size:13px; min-height:18px; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .mut { color:var(--mut); }
+  .tbl { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+  .tbl th, .tbl td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  .tbl th { color:var(--mut); font-weight:600; }
+  code { background:#0d1016; padding:1px 6px; border-radius:5px; font-size:11.5px; color:#9ecbff; }
+  ol { margin:6px 0 0; padding-left:20px; }
+  ol li { margin:4px 0; color:var(--mut); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tempel Token Admin</h1>
+  <p class="sub">Cara menangkap sesi admin tan&shy;pa extension &amp; tanpa Chrome debug. Token tersimpan ke Supabase; daemon otomatis membacanya (≤10 dtk).</p>
+
+  <div class="card">
+    <label>Langkah 1 &mdash; Salin header request dari Chrome biasa</label>
+    <ol>
+      <li>Buka halaman admin bandar80 (mis. <code>bandar80.idrbo2.com</code>) dan pastikan sudah login.</li>
+      <li>Tekan <b>F12</b> &rarr; tab <b>Network</b> &rarr; muat/buka fitur <b>riwayat / history scatter</b>.</li>
+      <li>Klik satu request yang berisi <code>queryTransactionHistoryListForUser</code> lalu buka tab <b>Headers</b>.</li>
+      <li>Blok semua baris header Request &rarr; klik kanan &rarr; <b>Copy &rsaquo; Copy request headers</b>.</li>
+    </ol>
+    <div style="margin-top:12px;">
+      <label>Tempel di sini (bisa juga cukup satu baris token saja):</label>
+      <textarea id="raw" placeholder="X-Access-Token: eyJhbGciOi...&#10;X-Agent-Pkid: 12&#10;X-Agent-Role: AGENT&#10;X-Agent-Suid: 88&#10;X-Agent-User: ...&#10;X-Agent-UserId: ...&#10;X-Agent-Voice: false"></textarea>
+    </div>
+    <div style="margin-top:12px;">
+      <label>Host API target situs ini (biarkan bila sesuai):</label>
+      <input type="text" id="host" value="public.zmcyu9ypy.com">
+    </div>
+    <button class="btn" id="save">Simpan Token</button>
+    <div id="st"></div>
+  </div>
+
+  <div class="card">
+    <label>Token tersimpan saat ini</label>
+    <table class="tbl">
+      <thead><tr><th>Host</th><th>Token</th><th>X-Agent</th><th>Waktu</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="4" class="mut">memuat…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://epzuvadrnzdnyyhwiqyc.supabase.co';
+const SB_KEY = 'sb_publishable_4GtsLX1vvVcyfyFnL91JwQ_DLh_jvjP';
+const HDRS = ['X-Access-Token','X-Agent-Pkid','X-Agent-Role','X-Agent-Suid','X-Agent-User','X-Agent-UserId','X-Agent-Voice'];
+
+const $ = (id) => document.getElementById(id);
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]; }); }
+
+function parse(raw) {
+  const out = {};
+  for (const line of String(raw || '').split(/\r?\n/)) {
+    const m = line.match(/^([^:\s]+):\s*(.+)$/);
+    if (m) out[m[1]] = m[2].trim();
+  }
+  const h = {};
+  for (const k of HDRS) if (out[k]) h[k] = out[k];
+  if (!Object.keys(h).length) {
+    const single = String(raw || '').trim().split(/\r?\n/)[0].trim();
+    if (single) h['X-Access-Token'] = single;
+  }
+  return h;
+}
+
+function setSt(msg, cls) { const el = $('st'); el.className = cls || ''; el.textContent = msg; }
+
+async function post(host, headers) {
+  const r = await fetch(SB_URL + '/rest/v1/worker_tokens', {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify({ host: host.replace(/^https?:\/\//,'').replace(/\/+$/,''), headers })
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 404 ? ' — tabel worker_tokens belum dibuat. Jalankan SQL di Supabase SQL Editor dulu.' : ''));
+}
+
+async function refresh() {
+  try {
+    const r = await fetch(SB_URL + '/rest/v1/worker_tokens?select=host,headers,captured_at&order=captured_at.desc&limit=8', { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } });
+    if (!r.ok) { $('rows').innerHTML = '<tr><td colspan="4" class="bad">Tabel belum ada (jalankan SQL dulu) — ' + r.status + '</td></tr>'; return; }
+    const rows = await r.json();
+    if (!rows || !rows.length) { $('rows').innerHTML = '<tr><td colspan="4" class="mut">Belum ada token.</td></tr>'; return; }
+    $('rows').innerHTML = rows.map(function (row) {
+      const h = row.headers || {};
+      const has = (h['X-Access-Token'] || '').length >= 10;
+      return '<tr><td>' + esc(row.host) + '</td><td class="' + (has ? 'ok' : 'bad') + '">' + esc(String(h['X-Access-Token'] || '').slice(0, 8)) + '…</td>' +
+             '<td class="mut">' + esc(h['X-Agent-Pkid'] || '-') + '</td><td class="mut">' + esc(row.captured_at || '') + '</td></tr>';
+    }).join('');
+  } catch (e) {
+    $('rows').innerHTML = '<tr><td colspan="4" class="bad">' + esc(e.message) + '</td></tr>';
+  }
+}
+
+$('save').addEventListener('click', async function () {
+  const btn = $('save'); btn.disabled = true;
+  try {
+    const headers = parse($('raw').value);
+    const host = $('host').value.trim();
+    if (!host) { setSt('Host wajib diisi.', 'bad'); return; }
+    if (!headers['X-Access-Token'] || headers['X-Access-Token'].length < 10) { setSt('X-Access-Token tidak ditemukan / terlalu pendek. Periksa hasil salin lalu ulangi.', 'bad'); return; }
+    await post(host, headers);
+    setSt('Token tersimpan untuk ' + host + '. Daemon akan membacanya dalam hitungan detik.', 'ok');
+    $('raw').value = '';
+    refresh();
+  } catch (e) {
+    setSt('Gagal simpan: ' + e.message, 'bad');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+refresh();
+</script>
+</body>
+</html>

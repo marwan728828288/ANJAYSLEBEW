@@ -64,6 +64,42 @@ const PATCH_SOURCE = `(function () {
 
 const SCAN_EXPR = 'JSON.stringify([].concat(window.__scaterSniff || []))';
 
+/* Ekstrak token "?t=" dari URL (port lib/utils.js extractToken extension):
+   redirect.html?t=..., GetBetHistory?t=..., atau ?t= umum. */
+function extractTokenFromUrl(url) {
+  if (!url) return '';
+  const s = String(url);
+  const m1 = s.match(/redirect\.html[^"'\s]*[?&]t=([A-Za-z0-9_.~-]{10,})/i);
+  if (m1) return m1[1];
+  const m2 = s.match(/GetBetHistory[^"'\s]*[?&]t=([^&\s"']{10,})/i);
+  if (m2) return m2[1];
+  const m3 = s.match(/[?&]t=([A-Za-z0-9_.~-]{10,})/i);
+  return m3 ? m3[1] : '';
+}
+
+/* Host yang boleh jadi sumber history token: target admin + host API
+   placeholder (?t= dipakai ke GetBetHistory di host public-api). */
+function historyCaptureHosts(cfg) {
+  const hosts = targetHosts(cfg);
+  try { hosts.add(new URL(cfg.historyApi || 'https://public-api.zmcyu9ypy.com/web-api/operator-proxy/v1/History/GetBetHistory').hostname); } catch (e) {}
+  return hosts;
+}
+
+/* Aman untuk disimpan sebagai history token: host dikenal ATAU URL halaman
+   history/keterangan. (Chrome khusus operasi, tapis ringan biar tak salah
+   tangkap token aplikasi lain.) */
+function captureHistoryToken(url, cfg) {
+  const tk = extractTokenFromUrl(url);
+  if (!tk || tk.length < 10) return null;
+  let host = '';
+  try { host = new URL(url).hostname; } catch (e) {}
+  const hostOk = host && historyCaptureHosts(cfg).has(host);
+  const pageOk = /\/history\/|keterangan|GetBetHistory/i.test(url);
+  if (!hostOk && !pageOk) return null;
+  T.saveHistoryToken(tk, host);
+  return tk;
+}
+
 function hostOf(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return ''; }
 }
@@ -95,7 +131,9 @@ async function attachHandle(cfg, handle, onSaved) {
       try {
         const req = params && params.request;
         const u = req && req.url;
-        if (!u || !(/queryTransactionHistoryListForUser|\/game-oc\//.test(u))) return;
+        if (!u) return;
+        if (/GetBetHistory/.test(u)) captureHistoryToken(u, cfg);
+        if (!(/queryTransactionHistoryListForUser|\/game-oc\//.test(u))) return;
         const h = req.headers || {};
         const host = saveCapture(u, h);
         if (host && onSaved) onSaved(host);
@@ -135,6 +173,7 @@ export async function ensure(cfg, onSaved) {
 const fresh = [];
     for (const t of pages) {
       if (!t.url) continue;
+      captureHistoryToken(t.url, cfg);
       const already = installed.find((i) => i.handle.target.id === t.id && i.alive);
       if (already) { fresh.push(already); continue; }
       try {

@@ -34,7 +34,12 @@ export function pickHeaders(raw) {
   const out = {};
   for (const k of HDR_NAMES) {
     const v = raw && raw[k];
-    if (v !== undefined && v !== null && v !== '') out[k] = String(v);
+    if (v !== undefined && v !== null && v !== '') {
+      let val = String(v).trim();
+      const m = val.match(/^(X-[A-Za-z0-9-]+)[\t\r\n](.*)$/);
+      if (m) val = m[2].trim();
+      if (val) out[k] = val;
+    }
   }
   return out;
 }
@@ -42,6 +47,18 @@ export function pickHeaders(raw) {
 export function hasToken(h) {
   if (!h) return false;
   return !!(h['X-Access-Token'] && h['X-Access-Token'].length >= 10);
+}
+
+/* Kedaluwarsa JWT (exp, ms) tanpa verifikasi signature. null bila tak terbaca. */
+export function headerExpiryMs(h) {
+  const t = h && h['X-Access-Token'];
+  if (!t) return null;
+  try {
+    const parts = String(t).split('.');
+    if (parts.length < 2) return null;
+    const pay = JSON.parse(Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString());
+    return typeof pay.exp === 'number' ? pay.exp * 1000 : null;
+  } catch (e) { return null; }
 }
 
 /* Simpan headers yang tertangkap untuk sebuah host (base = origin url api, mis. https://public.zmcyu9ypy.com). */
@@ -85,4 +102,45 @@ export function statusText() {
     list.push({ host, ok, capturedAt: rec.capturedAt || null });
   }
   return list;
+}
+
+/* ---- History token (token "?t=" GetBetHistory, TTL 55 mnt, ala extension) ---- */
+
+export const HISTORY_TOKEN_TTL_MS = 55 * 60 * 1000;
+
+export function saveHistoryToken(tk, host) {
+  if (!tk || String(tk).length < 10) return false;
+  const st = read();
+  st.historyToken = String(tk);
+  st.historyTokenAt = Date.now();
+  if (host) st.historyTokenHost = host;
+  write();
+  return true;
+}
+
+export function getHistoryToken() {
+  const st = read();
+  if (!st.historyToken || !st.historyTokenAt) return null;
+  if (Date.now() - st.historyTokenAt > HISTORY_TOKEN_TTL_MS) return null;
+  return st.historyToken;
+}
+
+export function clearHistoryToken() {
+  const st = read();
+  st.historyToken = '';
+  st.historyTokenAt = 0;
+  write();
+}
+
+/* Anchor (klaim terakhir SESUAI) dipakai auto-refresh token history. */
+export function saveAnchor(userId, txId, site) {
+  if (!userId || !txId) return;
+  const st = read();
+  st.anchor = { userId: String(userId), txId: String(txId), site: site || '', savedAt: Date.now() };
+  write();
+}
+
+export function getAnchor() {
+  const st = read();
+  return st.anchor && st.anchor.userId && st.anchor.txId ? st.anchor : null;
 }
