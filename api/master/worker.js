@@ -302,7 +302,7 @@ async function finalizeVerdict(claim, verdict, ver) {
   await sbClaimPatch(claim.id, extra, claim.status === 'SESUAI' ? 'SESUAI' : claim.status === 'VERIFYING' ? 'VERIFYING' : null);
 }
 
-async function processClaim(claim, admin) {
+async function processClaim(claim, admin, siteCfg) {
   if (!admin) {
     await sbClaimPatch(claim.id, {
       status: 'NO_TOKEN', label: 'BUTUH SESI ADMIN',
@@ -317,7 +317,7 @@ async function processClaim(claim, admin) {
     }, claim.status === 'VERIFYING' ? 'VERIFYING' : null);
     return 'EXPIRED';
   }
-  const ver = await C.verifyClaim({ base: admin.base, headers: admin.headers, claim });
+  const ver = await C.verifyClaim({ base: admin.base, headers: admin.headers, claim, apiHost: C.historyApiFor(admin.base) });
   if (ver.sessionInvalid) {
     await sbClaimPatch(claim.id, {
       status: 'NO_TOKEN', label: 'SESI ADMIN KADALUARSA', detail: String(ver.lastErr || '').slice(0, 300)
@@ -427,32 +427,57 @@ async function handleProcess(req, res) {
 
     const claims = await sbRows('claims',
       'select=id,claim_no,site,user_id,kode_tiket,betting,scatter,status,label,detail,created_at,updated_at&status=in.(PENDING,SESUAI)&order=created_at.asc&limit=12');
+
+    const siteCfgBySiteId = new Map();
+    for (const s of sites || []) {
+      if (!s || typeof s !== 'object') continue;
+      const pick = (name) => {
+        if (s[name] !== undefined && s[name] !== null) return s[name];
+        const ln = name.toLowerCase();
+        for (const k of Object.keys(s)) {
+          if (k.toLowerCase() === ln) return s[k];
+        }
+        return undefined;
+      };
+      const siteId = pick('siteId');
+      if (!siteId) continue;
+      siteCfgBySiteId.set(String(siteId).toLowerCase(), {
+        siteId,
+        label: pick('label'),
+        host: pick('host'),
+        historyHost: pick('historyHost'),
+        apiHost: pick('apiHost'),
+        gameId: pick('gameId'),
+        active: pick('active')
+      });
+    }
+
     const start = Date.now();
     for (const claim of claims || []) {
-      if (Date.now() - start > PROCESS_BUDGET_MS) break;
-      summary.scanned++;
-      const admin = await findAdminFor(claim, bestByHost, sites, bonusDomain);
-
-      if (claim.status === 'SESUAI') {
-        const updated = claim.updated_at ? Date.now() - new Date(claim.updated_at).getTime() : Number.MAX_SAFE_INTEGER;
-        if (updated > 15000) { try { await pollSesuai(claim, admin); } catch (e) {} }
-        continue;
-      }
-
-      /* kunci antrean: hanya ambil yg masih PENDING (cek status=eq.PENDING) */
-      const locked = await sbClaimPatch(claim.id, {
-        status: 'VERIFYING', label: 'CEK', detail: 'diproses server (web-only)'
-      }, 'PENDING');
-      if (!Array.isArray(locked) || locked.length === 0) continue;
-      summary.locked++;
       try {
-        const r = await processClaim(claim, admin);
+        if (Date.now() - start > PROCESS_BUDGET_MS) break;
+        summary.scanned++;
+        const admin = await findAdminFor(claim, bestByHost, sites, bonusDomain);
+
+        if (claim.status === 'SESUAI') {
+          const updated = claim.updated_at ? Date.now() - new Date(claim.updated_at).getTime() : Number.MAX_SAFE_INTEGER;
+          if (updated > 15000) await pollSesuai(claim, admin);
+          continue;
+        }
+
+        /* kunci antrean: hanya ambil yg masih PENDING (cek status=eq.PENDING) */
+        const locked = await sbClaimPatch(claim.id, {
+          status: 'VERIFYING', label: 'CEK', detail: 'diproses server (web-only)'
+        }, 'PENDING');
+        if (!Array.isArray(locked) || locked.length === 0) continue;
+        summary.locked++;
+        const r = await processClaim(claim, admin, siteCfgBySiteId.get(String(claim.site || '').toLowerCase()));
         if (r === 'RETRY') summary.retried++; else summary.settled++;
       } catch (e) {
         summary.errors++;
         await sbClaimPatch(claim.id, {
           status: 'ERROR', label: 'ERROR', detail: String(e.message || e).slice(0, 300)
-        }, 'VERIFYING').catch(() => {});
+        }).catch(() => {});
       }
     }
     return L.ok(res, { ok: true, summary }, { 'Cache-Control': 'no-store' });

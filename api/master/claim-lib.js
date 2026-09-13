@@ -14,6 +14,21 @@
 
 const WIB_MS = 7 * 3600 * 1000;
 const DEFAULT_HISTORY_API = 'https://public-api.zmcyu9ypy.com/web-api/operator-proxy/v1/History/GetBetHistory';
+const HISTORY_API_PATH = '/web-api/operator-proxy/v1/History/GetBetHistory';
+
+/* Domain publik dari base (mis. bandar80.idrbo2.com → idrbo2.com) */
+function domainOf(base) {
+  const h = String(base || '').replace(/^https?:\/\//, '').split('/')[0];
+  const m = String(h).match(/^(?:[a-z0-9-]+\.)?([a-z0-9-]+\.[a-z]{2,24})$/i);
+  return m ? m[1] : '';
+}
+/* GetBetHistory milik SITUS itu (bukan hardcoded zmcyu9ypy).
+   Sama dgn logika extension: public-api.<domain> + path operator-proxy. */
+function historyApiFor(base) {
+  const d = domainOf(base);
+  if (d) return 'https://public-api.' + d + HISTORY_API_PATH;
+  return DEFAULT_HISTORY_API;
+}
 
 function jwtExpMs(token) {
   try {
@@ -197,11 +212,12 @@ function scatterFallbackExtract(pgData) {
 }
 
 /* Scatter aktual dari GetBetHistory: t = X-Access-Token admin (sama dgn
-   URL history extension). Tanpa refresh tab — cloud-first. */
-async function scatterForTicket(headers, screenId, gameId) {
+   URL history extension). Tanpa refresh tab — cloud-first.
+   apiHost = base yg punya token → otomatis public-api.<domain>. */
+async function scatterForTicket(headers, screenId, gameId, apiHost) {
   const token = headers['X-Access-Token'] || '';
   if (!token || token.length < 10) throw new Error('Token history tidak ditemukan');
-  const api = DEFAULT_HISTORY_API;
+  const api = apiHost || DEFAULT_HISTORY_API;
   const r = await fetch(`${api}?t=${encodeURIComponent(token)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -226,8 +242,9 @@ async function scatterForTicket(headers, screenId, gameId) {
 
 /* CEK penuh: history multi-hari + broad, cocokkan kode + debit>0, game 65/74,
    scatter GetBetHistory. headers = X-Access-Token admin; base = origin api. */
-async function verifyClaim({ base, headers, claim }) {
+async function verifyClaim({ base, headers, claim, apiHost }) {
   const target = String(claim.kode_tiket || '').trim();
+  const bhApi = apiHost || historyApiFor(base);
   const dates = [wibDayStr(0), wibDayStr(1), wibDayStr(2), wibDayStr(3), 'wide:' + wibDayStr(60)];
   const seens = new Set();
   const records = [];
@@ -258,26 +275,26 @@ async function verifyClaim({ base, headers, claim }) {
       if (!matched || recDebit(r) > recDebit(matched)) matched = r;
     }
   }
-  if (!matched) return { records, matched: null, actualBet: null, actualScatter: null, verdict: '', gameMismatch: false, lastErr };
+  if (!matched) return { records, matched: null, actualBet: null, actualScatter: null, verdict: '', gameMismatch: false, lastErr, bhApi };
 
   const gameId = gameIdOf(matched);
   if (gameId !== '65' && gameId !== '74') {
-    return { records, matched, actualBet: recDebit(matched) || null, actualScatter: null, verdict: recVerdict(matched), gameMismatch: true, lastErr: 'Bukan Mahjong 1 atau 2 — tolak' };
+    return { records, matched, actualBet: recDebit(matched) || null, actualScatter: null, verdict: recVerdict(matched), gameMismatch: true, lastErr: 'Bukan Mahjong 1 atau 2 — tolak', bhApi };
   }
 
   const actualBet = recDebit(matched) || null;
   let scatter = null;
   let scatterErr = '';
   try {
-    scatter = await scatterForTicket(headers, target.slice(0, 19), gameId);
+    scatter = await scatterForTicket(headers, target.slice(0, 19), gameId, bhApi);
   } catch (e) {
     scatterErr = String(e.message || e);
-    if (isSessionInvalidErr(scatterErr)) { lastErr = 'session token invalid/expired'; return { records, matched, actualBet, actualScatter: null, verdict: recVerdict(matched), gameMismatch: false, lastErr, sessionInvalid: true }; }
+    if (isSessionInvalidErr(scatterErr)) { lastErr = 'session token invalid/expired'; return { records, matched, actualBet, actualScatter: null, verdict: recVerdict(matched), gameMismatch: false, lastErr, sessionInvalid: true, bhApi }; }
     if (/belum siap|scatter tidak valid|token history/i.test(scatterErr)) { lastErr = 'scatter belum siap: ' + scatterErr; }
     else lastErr = scatterErr;
   }
   const actualScatter = (scatter !== null && scatter >= 3 && scatter <= 5) ? scatter : null;
-  return { records, matched, actualBet, actualScatter, verdict: recVerdict(matched), gameMismatch: false, lastErr: scatterErr || lastErr };
+  return { records, matched, actualBet, actualScatter, verdict: recVerdict(matched), gameMismatch: false, lastErr: scatterErr || lastErr, bhApi };
 }
 
 /* Evaluasi kecocokan (bet + scatter). */
@@ -287,6 +304,7 @@ function compareClaim(claim, ver) {
   const scatterOk = [3, 4, 5].includes(Number(claim.scatter));
   if (!scatterOk) reasons.push('scatter klaim harus 3/4/5');
   if (ver.matched) {
+    if (!ver.actualBet || Number(ver.actualBet) <= 0) reasons.push('Nilai debet tidak valid — tolak');
     if (ver.actualScatter === null || ver.actualScatter === undefined) reasons.push('scatter tidak terverifikasi (GetBetHistory)');
     else if (Number(claim.scatter) !== Number(ver.actualScatter)) reasons.push('scatter klaim ' + claim.scatter + ' vs aktual ' + ver.actualScatter);
     if (ver.actualBet === null || ver.actualBet === undefined) reasons.push('bet aktual tidak terverifikasi');
@@ -319,6 +337,6 @@ module.exports = {
   jwtExpMs, baseUrlFor, wibDayStr, historyList,
   rowsOf, recSid, recDebit, gameIdOf, recVerdict,
   invalidSession, invalidSessionMsg, isSessionInvalidErr,
-  scatterForTicket, verifyClaim, compareClaim, fetchVerdict,
+  domainOf, historyApiFor, scatterForTicket, verifyClaim, compareClaim, fetchVerdict,
   DEFAULT_HISTORY_API
 };

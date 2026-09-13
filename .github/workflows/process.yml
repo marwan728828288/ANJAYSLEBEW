@@ -1,0 +1,16 @@
+name: Auto Proses Klaim (Web)
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Panggil processor web master
+        run: |
+          curl -sS -X POST -H "x-vercel-cron: 1" -H "Accept: application/json" \
+            --max-time 50 \
+            https://autoscater1-master.vercel.app/api/worker/process || echo "processor tidak merespons (mungkin sedang diproses)"
