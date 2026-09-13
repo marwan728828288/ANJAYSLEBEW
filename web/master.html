@@ -348,6 +348,22 @@
           <button class="btn" id="wSave" style="margin-top:14px;">Simpan Parameter</button>
         </div>
       </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="kicker"><span>Bonus Bot (Railway • Playwright)</span><div class="hr"></div></div>
+        <div class="hint" style="margin-bottom:12px">Server Railway yang selalu hidup: login bot 1× ke situs bonus, lalu bot bisa klik tombol <b>Approve/Reject</b> untuk tiket yang sudah <b>INPUT_OK</b> (fase C). Endpoint <code>/app/bonus/*</code> hanya ada di paket Railway.</div>
+        <div id="bbStatus" class="hint">Memuat status bot…</div>
+        <div class="wact" style="margin-top:8px;">
+          <button class="sm" id="bbLogin">Login Bot Baru</button>
+          <button class="sm" id="bbRefresh">Segarkan</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <input id="bbKode" placeholder="kode tiket (contoh 2081566454871960576)" autocomplete="off" maxlength="40" style="flex:1;min-width:220px;background:rgba(15,13,10,.9);border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:10px 12px;font-size:13px;">
+          <button class="sm" id="bbApprove">Approve</button>
+          <button class="sm danger" id="bbReject">Reject</button>
+        </div>
+        <div id="bbOut" style="margin-top:10px;font-size:11px;color:var(--soft);line-height:1.6;"></div>
+      </div>
     </section>
 
     <!-- HEADER ADMIN -->
@@ -472,7 +488,7 @@
     Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('active', v.id === 'view-' + name); });
     if (name === 'claim') renderRows();
     if (name === 'health') loadHealth();
-    if (name === 'otomasi') loadWorker();
+    if (name === 'otomasi') { loadWorker(); loadBonusState(); }
     if (name === 'header') loadHeaders();
     if (name === 'staff') loadStaff();
     if (name === 'otomasi') { if (wTimer) clearTimeout(wTimer); }
@@ -1067,12 +1083,54 @@
       toast((e && e.message) || 'Gagal memproses.', 'bad');
     });
   }
+  var bbBusy = false;
+  function bbPrint(html) { var o = $('bbOut'); if (o) o.innerHTML = html; }
+  function loadBonusState() {
+    api('GET', '/app/bonus/state').then(function (d) {
+      var st = (d && d.state) || {};
+      $('bbStatus').innerHTML = 'Bonus Bot <b>AKTIF</b> &middot; situs: <code>' + esc((st && st.site) || '-') + '</code> &middot; sesi: <code>' + ((st && st.loggedIn) ? 'tersimpan' : 'belum login') + '</code>';
+    }).catch(function () {
+      $('bbStatus').innerHTML = 'Bonus Bot <b>NONAKTIF</b> di platform ini.<br>Klik Approve/Reject otomatis hanya ada di paket Railway (env <code>RAILWAY_PLAYWRIGHT=true</code> + Docker <code>ARG PLAYWRIGHT=true</code>).';
+    });
+  }
+  function bonusLogin() {
+    if (bbBusy) return; bbBusy = true;
+    bbPrint('Membuka jendela login bot (tunggu ~15 dtk)…');
+    api('POST', '/app/bonus/login', {}).then(function (d) {
+      bbBusy = false;
+      bbPrint('Login OK. ' + esc((d && d.note) || 'Sesi tersimpan.'));
+      loadBonusState();
+    }).catch(function (e) {
+      bbBusy = false;
+      bbPrint('Gagal login: ' + esc((e && e.message) || '?'));
+      loadBonusState();
+    });
+  }
+  function bonusClick(action) {
+    var kode = $('bbKode').value.trim();
+    if (!kode) { toast('Isi kode tiket dulu.', 'bad'); return; }
+    if (bbBusy) return; bbBusy = true;
+    bbPrint('Mencari & klik <b>' + esc(action) + '</b> utk <code>' + esc(kode) + '</code>…');
+    api('POST', '/app/bonus/click', { kode: kode, action: action }).then(function (d) {
+      bbBusy = false;
+      bbPrint('Klik: ' + (d.clicked ? 'tombol diklik.' : (d.note || 'selesai.')) + ' &middot; baris ditemukan: ' + (d.rowsFound != null ? d.rowsFound : '?'));
+      if (d.clicked) toast('Tombol ' + action + ' diklik.', 'ok');
+    }).catch(function (e) {
+      bbBusy = false;
+      bbPrint('Gagal: ' + esc((e && e.message) || '?'));
+      toast((e && e.message) || 'Gagal mengklik.', 'bad');
+    });
+  }
   document.addEventListener('click', function (e) {
     var b = e.target && e.target.closest ? e.target.closest('[data-hdel]') : null;
     if (b) hdDelToken(b.getAttribute('data-hdel'));
   });
   $('btnTokSave').addEventListener('click', hdSaveToken);
   $('btnProcessWeb').addEventListener('click', runProcessWeb);
+  $('bbRefresh').addEventListener('click', loadBonusState);
+  $('bbLogin').addEventListener('click', bonusLogin);
+  $('bbApprove').addEventListener('click', function () { bonusClick('APPROVE'); });
+  $('bbReject').addEventListener('click', function () { bonusClick('REJECT'); });
 
   /* ---------- boot ---------- */
   function bootFail() { toast('Sesi berakhir. Login ulang.', 'bad'); setTimeout(function () { location.reload(); }, 900); }

@@ -113,6 +113,8 @@ const MIME = {
 function serveStatic(req, res, p) {
   if (!SERVE_WEB) return fail(res, 404, 'not_found');
   let rel = p === '/' ? 'index.html' : p.replace(/^\/+/, '');
+  if (p === '/admin' || p === '/master') rel = 'master.html';
+  if (p === '/dashboard') rel = 'dashboard.html';
   const full = path.join(WEB_DIR, rel);
   if (path.normalize(full).indexOf(path.normalize(WEB_DIR)) !== 0) return fail(res, 403, 'forbidden');
   fs.readFile(full, (err, buf) => {
